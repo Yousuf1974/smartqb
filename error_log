@@ -1,0 +1,59 @@
+[30-Sep-2022 13:00:14 America/New_York] PHP Warning:  require_once(../bootstrap/app.php): failed to open stream: No such file or directory in /home/shiklgpl/smartqb.info/public/index.php on line 51
+[30-Sep-2022 13:00:14 America/New_York] PHP Fatal error:  require_once(): Failed opening required '../bootstrap/app.php' (include_path='.:/opt/alt/php74/usr/share/pear') in /home/shiklgpl/smartqb.info/public/index.php on line 51
+[30-Sep-2022 13:01:47 America/New_York] PHP Fatal error:  Uncaught Error: Call to a member function make() on int in /home/shiklgpl/smartqb.info/public/index.php:53
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/server.php(22): require_once()
+#1 {main}
+  thrown in /home/shiklgpl/smartqb.info/public/index.php on line 53
+[30-Sep-2022 17:35:24 UTC] PHP Fatal error:  Uncaught Illuminate\Contracts\Container\BindingResolutionException: Target [Illuminate\Contracts\Debug\ExceptionHandler] is not instantiable. in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Container/Container.php:1089
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Container/Container.php(886): Illuminate\Container\Container->notInstantiable('Illuminate\\Cont...')
+#1 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build('Illuminate\\Cont...')
+#2 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(851): Illuminate\Container\Container->resolve('Illuminate\\Cont...', Array, true)
+#3 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Container/Container.php(694): Illuminate\Foundation\Application->resolve('Illuminate\\Cont...', Array)
+#4 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1089
+[30-Sep-2022 14:12:11 America/New_York] PHP Notice:  Undefined variable: request in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:11 America/New_York] PHP Notice:  Undefined variable: response in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:11 America/New_York] PHP Fatal error:  Uncaught Error: Call to a member function route() on null in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:222
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(195): Illuminate\Foundation\Http\Kernel->gatherRouteMiddleware(NULL)
+#1 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(180): Illuminate\Foundation\Http\Kernel->terminateMiddleware(NULL, NULL)
+#2 /home/shiklgpl/smartqb.info/public/index.php(64): Illuminate\Foundation\Http\Kernel->terminate(NULL, NULL)
+#3 /home/shiklgpl/smartqb.info/server.php(22): require_once('/home/shiklgpl/...')
+#4 {main}
+  thrown in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php on line 222
+[30-Sep-2022 14:12:45 America/New_York] PHP Notice:  Undefined variable: request in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:45 America/New_York] PHP Notice:  Undefined variable: response in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:45 America/New_York] PHP Fatal error:  Uncaught Error: Call to a member function route() on null in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:222
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(195): Illuminate\Foundation\Http\Kernel->gatherRouteMiddleware(NULL)
+#1 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(180): Illuminate\Foundation\Http\Kernel->terminateMiddleware(NULL, NULL)
+#2 /home/shiklgpl/smartqb.info/public/index.php(64): Illuminate\Foundation\Http\Kernel->terminate(NULL, NULL)
+#3 /home/shiklgpl/smartqb.info/server.php(22): require_once('/home/shiklgpl/...')
+#4 {main}
+  thrown in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php on line 222
+[30-Sep-2022 14:12:57 America/New_York] PHP Notice:  Undefined variable: request in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:57 America/New_York] PHP Notice:  Undefined variable: response in /home/shiklgpl/smartqb.info/public/index.php on line 64
+[30-Sep-2022 14:12:57 America/New_York] PHP Fatal error:  Uncaught Error: Call to a member function route() on null in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:222
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(195): Illuminate\Foundation\Http\Kernel->gatherRouteMiddleware(NULL)
+#1 /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(180): Illuminate\Foundation\Http\Kernel->terminateMiddleware(NULL, NULL)
+#2 /home/shiklgpl/smartqb.info/public/index.php(64): Illuminate\Foundation\Http\Kernel->terminate(NULL, NULL)
+#3 /home/shiklgpl/smartqb.info/server.php(22): require_once('/home/shiklgpl/...')
+#4 {main}
+  thrown in /home/shiklgpl/smartqb.info/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php on line 222
+[30-Jan-2023 00:36:43 America/New_York] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/shiklgpl/smartqb.info/public/index.php:7
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/server.php(22): require_once()
+#1 {main}
+  thrown in /home/shiklgpl/smartqb.info/public/index.php on line 7
+[30-Jan-2023 00:36:51 America/New_York] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/shiklgpl/smartqb.info/public/index.php:7
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/server.php(22): require_once()
+#1 {main}
+  thrown in /home/shiklgpl/smartqb.info/public/index.php on line 7
+[30-Jan-2023 00:37:18 America/New_York] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/shiklgpl/smartqb.info/public/index.php:7
+Stack trace:
+#0 /home/shiklgpl/smartqb.info/server.php(22): require_once()
+#1 {main}
+  thrown in /home/shiklgpl/smartqb.info/public/index.php on line 7
