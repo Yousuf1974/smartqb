@@ -29,7 +29,7 @@ Route::get('/', function(){
 });
 
 Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
-    
+
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
 
     // back to superadmin
@@ -39,7 +39,7 @@ Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
         $user->save();
         return redirect()->route('dashboard');
     })->name('back-to-superadmin');
-    
+
     // User Module
     Route::controller(UserController::class)->group(function(){
         Route::get('/users', 'index')->name('users');
@@ -94,8 +94,13 @@ Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
         Route::post('retry-to-send', [SMSController::class, 'retry_to_send'])->name('sms.retry');
         Route::get('sms-purchase-history', [SMSController::class, 'sms_purchase_history'])->name('sms_purchase_history');
         Route::get('sms-balance', [SMSController::class, 'sms_balance_check'])->name('sms.balance_check');
+
+
+        Route::get('batch-sms-send', [SMSController::class, 'batch_sms_send'])->name('batch_sms_send');
+        Route::post('batch-sms-send', [SMSController::class, 'batch_sms_send_req'])->name('batch_sms_send_req');
+        Route::post('upload-excel', [SMSController::class, 'uploadExcel'])->name('upload-excel');
     });
-    
+
 
     // settings
     Route::prefix('settings')->group(function() {
@@ -103,7 +108,7 @@ Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
         Route::put('institution/{institution}', [SettingsController::class, 'institution_setting_store'])->name('settings.institution_update');
     });
 
-    // report 
+    // report
     Route::prefix('report')->group(function() {
         // student report
         Route::get('student', [ReportController::class, 'student_report'])->name('report.student');
@@ -120,7 +125,7 @@ Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
         // login as this institution
         Route::get('{institution}/login-as-this-institution', [MiscellaneousController::class, 'login_as_ins'])->name('login_as_ins');
     });
-    
+
 });
 
 // institution registration
