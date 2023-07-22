@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\CustomExcelFileImport;
+use App\Libraries\CommonFunction;
 use App\Models\Batch;
 use App\Models\InsSms;
 use App\Models\Institution;
@@ -9,12 +11,16 @@ use App\Models\SMS;
 use App\Models\SmsHistory;
 use App\Models\SMSPurchase;
 use App\Models\Student;
+use App\Notifications\BatchExcelNotification;
 use App\Notifications\CustomNotification;
 use App\Traits\InstitutionTrait;
 use App\Traits\SmsTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use DataTables;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Notification;
 
 class SMSController extends Controller
 {
@@ -312,5 +318,86 @@ class SMSController extends Controller
         $sMS = SMS::findOrFail($sms);
         $sMS->delete();
         return redirect()->back()->with('deleted', 'SMS Deleted!');
+    }
+
+    public function batch_sms_send()
+    {
+        return view('pages.sms.batch_sms_send');
+    }
+
+    public function uploadExcel(Request $request)
+    {
+        $validator = Validator::make(
+            [
+                'file'      => $request->file,
+                'extension' => strtolower($request->file->getClientOriginalExtension()),
+            ],
+            [
+                'file'          => 'required',
+                'extension'      => 'required|in:xlsx,xls',
+            ]
+        );
+
+
+        if ($validator->fails()) {
+            return ['responseCode'=>-1,'msg'=>$validator->errors()->first('file')];
+        }
+        else{
+            try {
+                $path = $request->file->getRealPath();
+                $import = new CustomExcelFileImport();
+                Excel::import($import, $request->file);
+
+                $columns = $import->getColumns();
+                $data = $import->getData();
+                $tableHtml = strval(view('pages.sms.excel_to_table',compact('columns','data')));
+                return ['responseCode'=> 1,'msg'=>'successfully fetch data', 'html'=> $tableHtml];
+            }
+            catch (\Exception $e){
+                dd($e->getMessage(), $e->getFile(), $e->getLine());
+                return ['responseCode'=> -1,'msg'=>'something went wrong', 'html'=> ''];
+            }
+        }
+    }
+
+    public function batch_sms_send_req(Request $request)
+    {
+        $selectedColumns = json_decode($request->input('columns'));
+        $selectedRows = json_decode($request->input('rows'));
+
+        if(!in_array('mobile',$selectedColumns)){
+            return ['responseCode'=>-1, 'msg'=>'You should provide mobile data. Please reload the page and try again.'];
+        }
+
+        $outputArray = [];
+        foreach ($request['mobile'] as $index => $mobile) {
+            if(in_array($index,$selectedRows) && strlen($mobile) == 11 && CommonFunction::validateBangladeshMobileNumber($mobile)){
+                $fieldsData = '';
+                foreach ($selectedColumns as $column) {
+                    if (isset($request[$column][$index]) && !is_null($request[$column][$index]) && $column !='mobile') {
+                        $fieldsData .= $request[$column][$index] . ' ';
+                    }
+                }
+                $fieldsData = trim($fieldsData);
+                if (!empty($fieldsData)) {
+                    $outputArray[$mobile] = $fieldsData;
+                }
+            }
+        }
+
+        if(valid_sms() && total_sms() >= count($outputArray)) {
+            foreach($outputArray as $mobile => $message) {
+                try{
+                    Notification::route('sms', $mobile)
+                        ->notify(new BatchExcelNotification($message,$mobile));
+                }catch(\Exception $e) {
+                    return ['responseCode'=>-1, 'msg'=>'Message cannot be sent to '.$mobile.'. Please reload the page and try again.'];
+                }
+            }
+            return ['responseCode'=>1, 'msg'=>'Message Sent Successfully'];
+        }
+        else{
+            return ['responseCode'=>1, 'msg'=>"You don't have sufficient SMS to Send. Please buy before next try."];
+        }
     }
 }
