@@ -320,9 +320,31 @@ class SMSController extends Controller
         return redirect()->back()->with('deleted', 'SMS Deleted!');
     }
 
-    public function batch_sms_send()
+    public function common_student_search(Request $request)
     {
-        return view('pages.sms.batch_sms_send');
+        try {
+            $requestedData = $request->all();
+            $batches = Batch::where('institution_id', auth()->user()->institution_id)->get();
+            $institution = Institution::select('custom_sms_template', 'name')->where('id', auth()->user()->institution_id)->first();
+            $students = Student::with(['batch'])->select('*')->where('institution_id', auth()->user()->institution_id);
+            if($requestedData['batch']) {
+                $students->where('batch_id', $requestedData['batch']);
+            }
+            if($requestedData['search']) {
+                $srch = $requestedData['search'];
+                $students->where(function($query) use($srch){
+                    return $query->where('student_name', 'LIKE', '%'.$srch.'%')
+                        ->orWhere('student_contact', $srch);
+                });
+            }
+            $students = $students->get();
+            $common_message = isset($requestedData['common_message']) && !empty($requestedData['common_message'])? $requestedData['common_message']: '';
+            $tableHtml = strval(view('pages.sms.student_list_template.common_list', compact('students', 'batches', 'institution','common_message')));
+            return ['responseCode'=> 1,'msg'=>'successfully fetch data', 'html'=> $tableHtml];
+        }
+        catch (\Exception $e){
+            return ['responseCode'=> -1,'msg'=>'something went wrong', 'html'=> ''];
+        }
     }
 
     public function uploadExcel(Request $request)
@@ -349,41 +371,53 @@ class SMSController extends Controller
                 Excel::import($import, $request->file);
 
                 $columns = $import->getColumns();
+                if(!in_array('mobile',$columns)){
+                    return ['responseCode'=> -1,'msg'=>'Your excel file must contain a column named "mobile".', 'html'=> ''];
+                }
+
                 $data = $import->getData();
-                $tableHtml = strval(view('pages.sms.excel_to_table',compact('columns','data')));
+                Session::forget('col_data');
+                Session::put('col_data',$data);
+                $tableHtml = strval(view('pages.sms.student_list_template.excel_to_table',compact('columns','data')));
                 return ['responseCode'=> 1,'msg'=>'successfully fetch data', 'html'=> $tableHtml];
             }
             catch (\Exception $e){
-                dd($e->getMessage(), $e->getFile(), $e->getLine());
+                #dd($e->getMessage(), $e->getFile(), $e->getLine());
                 return ['responseCode'=> -1,'msg'=>'something went wrong', 'html'=> ''];
             }
         }
     }
 
+    public function generateMessage(Request $request)
+    {
+        try{
+            $custom_msg = $request['custom_msg'];
+            $selected_rows = json_decode($request['rows'], true);
+            $all_data = Session::get('col_data');
+
+            if(empty($custom_msg)){
+                return ['responseCode'=> -1,'msg'=>'Please write your message first.', 'html'=> ''];
+            }
+
+            $custom_generated_array = [];
+
+            foreach ($selected_rows as $row){
+                $custom_generated_array[$all_data[$row]['mobile']] = CommonFunction::replacePlaceholders($custom_msg, $all_data[$row]);
+            }
+
+            Session::forget('custom_generated_array');
+            Session::put('custom_generated_array',$custom_generated_array);
+            $tableHtml = strval(view('pages.sms.student_list_template.custom_generated_msg_list',compact('custom_generated_array')));
+            return ['responseCode'=> 1,'msg'=>'Successfully generated data', 'html'=> $tableHtml];
+        }
+        catch (\Exception $e){
+            return ['responseCode'=> -1,'msg'=>'Something went wrong', 'html'=> ''];
+        }
+    }
+
     public function batch_sms_send_req(Request $request)
     {
-        $selectedColumns = json_decode($request->input('columns'));
-        $selectedRows = json_decode($request->input('rows'));
-
-        if(!in_array('mobile',$selectedColumns)){
-            return ['responseCode'=>-1, 'msg'=>'You should provide mobile data. Please reload the page and try again.'];
-        }
-
-        $outputArray = [];
-        foreach ($request['mobile'] as $index => $mobile) {
-            if(in_array($index,$selectedRows) && strlen($mobile) == 11 && CommonFunction::validateBangladeshMobileNumber($mobile)){
-                $fieldsData = '';
-                foreach ($selectedColumns as $column) {
-                    if (isset($request[$column][$index]) && !is_null($request[$column][$index]) && $column !='mobile') {
-                        $fieldsData .= $request[$column][$index] . ' ';
-                    }
-                }
-                $fieldsData = trim($fieldsData);
-                if (!empty($fieldsData)) {
-                    $outputArray[$mobile] = $fieldsData;
-                }
-            }
-        }
+        $outputArray = Session::get('custom_generated_array');
 
         if(valid_sms() && total_sms() >= count($outputArray)) {
             foreach($outputArray as $mobile => $message) {
@@ -394,6 +428,9 @@ class SMSController extends Controller
                     return ['responseCode'=>-1, 'msg'=>'Message cannot be sent to '.$mobile.'. Please reload the page and try again.'];
                 }
             }
+
+            Session::forget('custom_generated_array');
+            Session::forget('col_data');
             return ['responseCode'=>1, 'msg'=>'Message Sent Successfully'];
         }
         else{

@@ -96,7 +96,9 @@ Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
         Route::get('sms-balance', [SMSController::class, 'sms_balance_check'])->name('sms.balance_check');
 
 
-        Route::get('batch-sms-send', [SMSController::class, 'batch_sms_send'])->name('batch_sms_send');
+        // sms participant collection
+        Route::post('common-student-search', [SMSController::class, 'common_student_search'])->name('common-student-search');
+        Route::post('generate-message', [SMSController::class, 'generateMessage'])->name('generate_message');
         Route::post('batch-sms-send', [SMSController::class, 'batch_sms_send_req'])->name('batch_sms_send_req');
         Route::post('upload-excel', [SMSController::class, 'uploadExcel'])->name('upload-excel');
     });

@@ -201,12 +201,6 @@
                                         <p>Custom SMS Send</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{route("batch_sms_send")}}" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Batch SMS Send</p>
-                                    </a>
-                                </li>
                             @endcan
 
                             @can('miscellaneous-sms_history')
