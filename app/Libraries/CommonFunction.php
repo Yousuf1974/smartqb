@@ -35,4 +35,18 @@ class CommonFunction
         return preg_match($pattern, $number) === 1;
     }
 
+    public static function replacePlaceholders($string, $data)
+    {
+        $pattern = '/{{(.*?)}}/';
+        preg_match_all($pattern, $string, $matches);
+
+        foreach ($matches[1] as $placeholder) {
+            if (isset($data[$placeholder]) && !is_null($data[$placeholder])) {
+                $string = str_replace("{{{$placeholder}}}", $data[$placeholder], $string);
+            } else {
+                $string = str_replace("{{{$placeholder}}}", '', $string);
+            }
+        }
+        return $string;
+    }
 }
