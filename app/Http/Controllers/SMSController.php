@@ -343,6 +343,7 @@ class SMSController extends Controller
             return ['responseCode'=> 1,'msg'=>'successfully fetch data', 'html'=> $tableHtml];
         }
         catch (\Exception $e){
+            #return ['responseCode'=> -1,'msg'=>'something went wrong. err: '.$e->getMessage().' File: '.$e->getFile().' Line: '.$e->getLine(), 'html'=> ''];
             return ['responseCode'=> -1,'msg'=>'something went wrong', 'html'=> ''];
         }
     }

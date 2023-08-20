@@ -30,10 +30,16 @@
                                     "{{ins_name}}", "{{student_name}}", "{{student_batch}}", "{{student_class}}", "{{admission_date}}", "{{payment_ref}}",
                                     "{{payment_date}}", "{{total_amount}}", "{{paid_amount}}", "{{total_discount}}", "{{total_due}}", "{{per_month_fee}}"];
 
-                                $replaced_codes = [$institution->name, $student->student_name, $student->batch->batch_name, $student->batch->student_class,
-                                    date('d/m/y', strtotime($student->admission_date)), $student->get_last_payment()->ref_no, $student->get_last_payment()->payment_date,
-                                    $student->get_last_payment()->total_amount, $student->get_last_payment()->amount, $student->get_last_payment()->discount,
-                                    $student->get_last_payment()->due, $student->batch->batch_fee];
+                                $replaced_codes = [
+                                    $institution->name, $student->student_name, $student->batch->batch_name, $student->batch->student_class,
+                                    date('d/m/y', strtotime($student->admission_date)),
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->ref_no : '',
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->payment_date : '',
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->total_amount : '',
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->amount : '',
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->discount : '',
+                                    !empty($student->get_last_payment()) ? $student->get_last_payment()->due : '',
+                                    $student->batch->batch_fee];
 
                                 if (!$common_message) {
                                     $message = $institution->custom_sms_template ?? "N/A";
