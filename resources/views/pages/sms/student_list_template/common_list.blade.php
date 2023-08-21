@@ -51,7 +51,8 @@
                                 }
                                 $message = htmlentities($message, ENT_QUOTES, 'UTF-8', false);
                                 ?>
-                            @if(request()->send_common == 1)
+                            {{--@if(request()->send_common == 1)--}}
+                            @if(!empty($common_message))
                                 <input type="hidden" name="custom[]" value="1"/>
                             @endif
                             <tr>
