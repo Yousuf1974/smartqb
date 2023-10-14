@@ -84,15 +84,25 @@
                                 </div>
                                 <div class="col-md-6 col-sm-12">
                                     <div class="form-group">
+                                        <label for="phone">Password</label>
+                                        <input type="text" value="{{$institution->admin()->raw_psw}}" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Password">
+                                        @error('password') <p class="m-0 text-danger"><small>{{$message}}</small></p> @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 col-sm-12">
+                                    <div class="form-group">
                                         <label for="">Active Status</label> <br/>
-                                        <input 
-                                            type="checkbox" 
-                                            name="is_active" 
-                                            value="true" 
+                                        <input
+                                            type="checkbox"
+                                            name="is_active"
+                                            value="true"
                                             data-toggle="toggle" data-size="small"
-                                            data-onstyle="success"   
-                                            data-offstyle="warning" 
-                                            @if($institution->is_active) checked @endif  
+                                            data-onstyle="success"
+                                            data-offstyle="warning"
+                                            @if($institution->is_active) checked @endif
                                         />
                                     </div>
                                 </div>
