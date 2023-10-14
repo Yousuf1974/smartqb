@@ -28,12 +28,12 @@
 
 {{-- main content --}}
 @section('content')
-    
+
     <div class="row">
         <div class="col-md-12 col-sm-12 m-auto">
             <div class="card">
                 <div class="card-body overflow-auto">
-                    
+
                     <table id="institution_list" class="table table-striped table-bordered">
                         <thead class="bg-light">
                             <tr>
@@ -53,7 +53,7 @@
                     </table>
                 </div>
                 <div class="card-footer">
-                    
+
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
                     {data: 'name'},
                     {data: 'head_of_institution'},
                     {data: 'phone'},
-                    {data: 'user_psw'}, 
+                    {data: 'user_psw'},
                     {data: 'email'},
                     {data: 'created_at'},
                     {data: 'total_student'},
@@ -119,19 +119,19 @@
         });
 
         $(document).ready(function(){
-            
+
             $(document).on('click', '.send_sms', function() {
                let id = $(this).data('id');
                $('#view_title').text('Send SMS');
                $('#view_modal').modal('show');
             });
-            
+
             // delete institution
             $(document).on('click', '.delete_btn', function(){
                 let id = $(this).data('id');
                 Swal.fire({
                     title: 'Are you sure to Delete?',
-                    text: "You won't be able to undo this. Will you proceed to delelte all related data with this Institution?",
+                    text: "You won't be able to undo this. Will you proceed to delete all related data with this Institution?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
