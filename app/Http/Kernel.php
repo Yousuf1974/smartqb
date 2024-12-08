@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'is_active' => \App\Http\Middleware\IsActiveUser::class,
         'student_auth' => \App\Http\Middleware\StudentLogin::class,
         'admin_auth' => \App\Http\Middleware\SuperAdmin::class,
+        'user_registration_check' => \App\Http\Middleware\UserRegistrationCheck::class,
     ];
 }

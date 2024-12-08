@@ -173,7 +173,7 @@ class SMSController extends Controller
         // $sms_packages = SMS::where('is_active', true)->get();
         // return view('pages.sms.sms_buy', compact('sms_packages'));
         $ins_id = auth()->user()->institution_id ?? 0;
-        return redirect()->away("https://sms.smartqb.info/validate_link.php?link_id=$ins_id&user_type=C");
+        return redirect()->away("http://sms.smartqb.info/validate_link.php?link_id=$ins_id&user_type=C");
     }
 
     public function sms_buy_store(Request $request)

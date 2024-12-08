@@ -21,6 +21,19 @@
 
 {{-- main content --}}
 @section('content')
+
+    @if($remaining_days <= 14)
+    <div class="row">
+        <div class="col-md-12 col-sm-12">
+            <div class="card card-success card-outline">
+                <div class="card-body">
+                    <b class="text-danger">Your registration will be expire with in {{ $remaining_days }} days. Please renew Here</b> <a class="btn btn-xs btn-outline-success" href="{{ route("dashboard", ["paynow" => 1]) }}">@lang("Pay Now")</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @canany(['payment-create', 'student-create', 'batch-create', 'payment-index'])
     <div class="row">
         <div class="col-md-12 col-sm-12">

@@ -34,6 +34,7 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
     Route::get('institution/send-sms', [InstitutionController::class,  'send_sms'])->name('institution.send_sms');
     Route::post('institution/send-sms', [InstitutionController::class,  'send_sms_submit'])->name('institution.send_sms_submit');
     Route::post('institution/{institution}/comment', [InstitutionController::class,  'comment'])->name('institution.comment');
+    Route::post('institution/{institution}/registration-manager', [InstitutionController::class,  'storeRegistration'])->name('institution.registration.manager');
     Route::resource('institution', InstitutionController::class);
 
     Route::prefix('sms')->group(function(){

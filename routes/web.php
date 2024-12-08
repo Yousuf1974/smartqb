@@ -28,7 +28,7 @@ Route::get('/', function(){
     return redirect()->route('dashboard');
 });
 
-Route::middleware(['auth', 'is_active'])->prefix('dashboard')->group(function(){
+Route::middleware(['auth', 'is_active', 'user_registration_check'])->prefix('dashboard')->group(function(){
 
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
 

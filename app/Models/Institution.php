@@ -33,4 +33,9 @@ class Institution extends Model
     {
         return User::orderBy('id', 'asc')->where('institution_id', $this->id)->first();
     }
+    
+    public function registrationManagers()
+    {
+        return $this->hasMany(RegistrationManager::class);
+    }
 }
