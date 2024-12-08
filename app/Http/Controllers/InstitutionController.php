@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use DataTables;
 use App\Notifications\InstitutionNotification;
 use Illuminate\Support\Facades\Hash;
+use App\Models\RegistrationManager;
 
 class InstitutionController extends Controller
 {
@@ -208,6 +209,29 @@ class InstitutionController extends Controller
     {
         $institution = Institution::with(['users'])->findOrFail($institution);
         return view('pages.admin.institution.view', compact('institution'));
+    }
+    
+    public function storeRegistration(Request $request, Institution $institution)
+    {
+        $request->validate([
+            "from_date" => "required",
+            "to_date" => "required",
+            "account_renew_fee" => "required",
+            "total_days" => "required",
+        ]);
+        
+        $fromDate = \Carbon\Carbon::parse($request->from_date);
+        $toDate = \Carbon\Carbon::parse($request->to_date);
+        $totalDays = $request->total_days;
+        
+        $registration = RegistrationManager::create([
+            "institution_id" => $institution->id,
+            "valid_from" => $request->from_date,
+            "valid_to" => $request->to_date,
+            "account_renew_fee" => $request->account_renew_fee,
+            "total_days" => $totalDays,
+        ]);
+        return redirect()->back()->with('created',  'Registration created!');
     }
 
     /**

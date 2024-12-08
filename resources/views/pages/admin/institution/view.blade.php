@@ -165,6 +165,72 @@
                 </div>
             </form>
             
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="card-title">Registration Manager</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('institution.registration.manager', ['institution' => $institution->id]) }}" method='POST' >
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <lable>From Date</lable>
+                                <input type="date" name="from_date" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <lable>To Date</lable>
+                                <input type="date" name="to_date" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <lable>Account Renew Fee</lable>
+                                <input type="number" placeholder="Account Renew Fee" min="0" step="1" name="account_renew_fee" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <lable>Total Days</lable>
+                                <input type="number" placeholder="Total Days" min="0" step="1" name="total_days" class="form-control form-control-sm" />
+                            </div>
+                            
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-sm btn-success">Save</button>
+                        </div>
+                    </form>
+                    
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>SL</th>
+                                <th>From Date</th>
+                                <th>To Date</th>
+                                <th>Account Renew Fee</th>
+                                <th>Total Days</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($institution->registrationManagers()->orderBy("id", "desc")->get() as $registrationManager)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($registrationManager->valid_from)->format("d/m/y") }}
+                                </td>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($registrationManager->valid_to)->format("d/m/y") }}
+                                </td>
+                                <td>
+                                    {{ $registrationManager->account_renew_fee ?? 0 }}
+                                </td>
+                                <td>
+                                    {{ $registrationManager->total_days ?? 0 }}
+                                </td>
+                            </tr>
+                            @empty 
+                            
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
         </div>
     </div>
 @endsection

@@ -112,6 +112,7 @@
                     { data: 'institution' },
                     { data: 'action' },
                 ],
+                lengthMenu: [[10, 25, 50, 100, 1000], [10, 25, 50, 100, "All"]],
                 "buttons": [
                     "csv", "excel", "pdf","print", "colvis"
                 ],

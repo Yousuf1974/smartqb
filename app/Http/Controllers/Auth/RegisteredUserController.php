@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
                 'phone' => $request->phone, 
                 'head_of_institution' => $request->name ?? "Jone Doe", 
                 'email' => $request->email, 
-                'is_active' => true,
+                'is_active' => false,
             ]);
 
             $user->institution_id = $institution->id;
@@ -72,6 +72,14 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        //return redirect(RouteServiceProvider::HOME);
+        
+        // Added By Sohag 04/11/23 ...
+        
+        // Institution created successfully
+        session(['id' => $user->institution_id]);
+        session(['payment_type_id' => 103]);
+        return redirect()->away('https://shikkhafirst.com/sims/bkash.php?id='.$user->institution_id.'&payment_type_id=103'); // Replace with your payment URL
+        
     }
 }
