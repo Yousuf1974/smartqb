@@ -78,9 +78,9 @@
                             <tr>
                                 <th>Active Status</th>
                                 <td>
-                                    @if($institution->is_active)    
+                                    @if($institution->is_active)
                                         <span class="badge badge-success">Active</span>
-                                    @else 
+                                    @else
                                         <span class="badge badge-danger">Inactive</span>
                                     @endif
                                 </td>
@@ -111,7 +111,7 @@
                         <tbody>
                             @if($institution->users->isNotEmpty())
                             @foreach($institution->users as $user)
-                   
+
                             <tr>
                                 <td>{{$loop->iteration}}</td>
                                 <td>{{$user->name}}</td>
@@ -139,7 +139,7 @@
                                 </td>
                             </tr>
                             @endforeach
-                            @else 
+                            @else
                             <tr>
                                 <td colspan="7">No Data Found</td>
                             </tr>
@@ -148,7 +148,7 @@
                     </table>
                 </div>
             </div>
-            
+
             <!--comments box about institution-->
             <form action="{{route('institution.comment', ['institution' => $institution->id])}}" method="POST">
                 @csrf
@@ -164,7 +164,10 @@
                     </div>
                 </div>
             </form>
-            
+
+            @php
+                $regManagerData = $institution->registrationManagers()->orderBy("id", "desc")->get()->toArray();
+            @endphp
             <div class="card">
                 <div class="card-header bg-light">
                     <h4 class="card-title">Registration Manager</h4>
@@ -175,27 +178,31 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <lable>From Date</lable>
-                                <input type="date" name="from_date" class="form-control form-control-sm" />
+                                <input type="date" name="from_date" id="from_date" class="form-control form-control-sm"
+                                       value="{{ !empty($regManagerData[0]['valid_from']) ? \Carbon\Carbon::parse($regManagerData[0]['valid_from'])->format("Y-m-d") : '' }}" />
                             </div>
                             <div class="col-md-6 form-group">
                                 <lable>To Date</lable>
-                                <input type="date" name="to_date" class="form-control form-control-sm" />
+                                <input type="date" name="to_date" id="to_date" class="form-control form-control-sm"
+                                       value="{{ !empty($regManagerData[0]['valid_to']) ? \Carbon\Carbon::parse($regManagerData[0]['valid_to'])->format("Y-m-d") : '' }}" />
                             </div>
                             <div class="col-md-6 form-group">
                                 <lable>Account Renew Fee</lable>
-                                <input type="number" placeholder="Account Renew Fee" min="0" step="1" name="account_renew_fee" class="form-control form-control-sm" />
+                                <input type="number" placeholder="Account Renew Fee" min="0" step="1" name="account_renew_fee" class="form-control form-control-sm"
+                                       value="{{ !empty($regManagerData[0]['account_renew_fee']) ? $regManagerData[0]['account_renew_fee'] : '' }}"/>
                             </div>
                             <div class="col-md-6 form-group">
                                 <lable>Total Days</lable>
-                                <input type="number" placeholder="Total Days" min="0" step="1" name="total_days" class="form-control form-control-sm" />
+                                <input type="number" placeholder="Total Days" min="0" step="1" name="total_days" id="total_days" class="form-control form-control-sm"
+                                       value="{{ !empty($regManagerData[0]['total_days']) ? $regManagerData[0]['total_days'] : '' }}"/>
                             </div>
-                            
+
                         </div>
                         <div class="form-group">
                             <button type="submit" class="btn btn-sm btn-success">Save</button>
                         </div>
                     </form>
-                    
+
                     <table class="table table-sm table-bordered">
                         <thead>
                             <tr>
@@ -207,30 +214,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($institution->registrationManagers()->orderBy("id", "desc")->get() as $registrationManager)
+                            @forelse($regManagerData as $registrationManager)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    {{ \Carbon\Carbon::parse($registrationManager->valid_from)->format("d/m/y") }}
+                                    {{ \Carbon\Carbon::parse($registrationManager['valid_from'])->format("d/m/y") }}
                                 </td>
                                 <td>
-                                    {{ \Carbon\Carbon::parse($registrationManager->valid_to)->format("d/m/y") }}
+                                    {{ \Carbon\Carbon::parse($registrationManager['valid_to'])->format("d/m/y") }}
                                 </td>
                                 <td>
-                                    {{ $registrationManager->account_renew_fee ?? 0 }}
+                                    {{ $registrationManager['account_renew_fee'] ?? 0 }}
                                 </td>
                                 <td>
-                                    {{ $registrationManager->total_days ?? 0 }}
+                                    {{ $registrationManager['total_days'] ?? 0 }}
                                 </td>
                             </tr>
-                            @empty 
-                            
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No available data.</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-            
+
         </div>
     </div>
 @endsection
@@ -252,7 +261,24 @@
 @push('js')
 <script>
     $(document).ready(function(){
-        $("#user_list").DataTable({})
+        $("#user_list").DataTable({});
+
+        function calculateDifference() {
+            const fromDate = $('#from_date').val();
+            const toDate = $('#to_date').val();
+
+            var date1 = new Date(fromDate);
+            var date2 = new Date(toDate);
+
+            if (isNaN(date1.getTime()) || isNaN(date2.getTime())) return;
+
+            var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+            var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            $('#total_days').val(daysDiff + 1);   // add 1 to include the selected from date
+        }
+
+        $('#from_date, #to_date').on('change', calculateDifference);
     });
 </script>
 @endpush
