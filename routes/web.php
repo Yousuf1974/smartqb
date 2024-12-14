@@ -31,6 +31,7 @@ Route::get('/', function(){
 Route::middleware(['auth', 'is_active', 'user_registration_check'])->prefix('dashboard')->group(function(){
 
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/redirectToPay', [HomeController::class, 'redirectToPay'])->name('redirectToPay')->withoutMiddleware(['is_active','user_registration_check']);
 
     // back to superadmin
     Route::get('/back-to-superadmin', function(){

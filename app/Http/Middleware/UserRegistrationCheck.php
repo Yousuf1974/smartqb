@@ -18,6 +18,11 @@ class UserRegistrationCheck
     {
         if(auth("web")->check()){
             $institution = auth("web")->user()->institution;
+
+            if(!$institution->is_active){
+                abort(403, 'আপনার একাউন্টটি Inactive হয়ে আছে। Active করতে Pay Now button এ ক্লিক করুন।');
+            }
+
             $firstRegistrationManager = $institution->registrationManagers()->orderBy("id", "desc")->first();
             if($firstRegistrationManager) {
                 $validFrom = \Carbon\Carbon::parse($firstRegistrationManager->valid_from);
@@ -30,7 +35,7 @@ class UserRegistrationCheck
                     $_SESSION["id"] = $institution->id; // institution id
                     $_SESSION["institution_id"] = $institution->id; // institution id
                     $_SESSION["payment_type_id"] = 104;
-                    $_SESSION["Account_Renew_Fee"] = 0; // 
+                    $_SESSION["Account_Renew_Fee"] = 0; //
                     $_SESSION["Total_Days"] = 0;
                     $url = "https://www.shikkhafirst.com/sims/bkash.php?id=".$institution->id."&payment_type_id=104&Account_Renew_Fee=".$firstRegistrationManager->account_renew_fee."&Total_Days=".$firstRegistrationManager->total_days."";
                     return redirect()->to($url);

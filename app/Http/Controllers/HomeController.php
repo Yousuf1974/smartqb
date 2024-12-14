@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Traits\AdminTrait;
 use App\Traits\InstitutionTrait;
 use App\Traits\SuperAdminTrait;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -31,12 +32,12 @@ class HomeController extends Controller
             $_SESSION["id"] = $institution->id; // institution id
             $_SESSION["institution_id"] = $institution->id; // institution id
             $_SESSION["payment_type_id"] = 104;
-            $_SESSION["Account_Renew_Fee"] = 0; // 
+            $_SESSION["Account_Renew_Fee"] = 0; //
             $_SESSION["Total_Days"] = 0;
             $url = "https://www.shikkhafirst.com/sims/bkash.php?id=".$institution->id."&payment_type_id=104&Account_Renew_Fee=".$firstRegistrationManager->account_renew_fee."&Total_Days=".$firstRegistrationManager->total_days."";
             return redirect()->to($url);
         }
-        
+
         $ins_id = $this->institution_id();
         $total_institution = Institution::count();
         $total_student = Student::select()->institution($this->institution_id())->count();
@@ -47,7 +48,7 @@ class HomeController extends Controller
                             ->orderBy('id', 'desc')->limit(8)->get();
         $latest_students = Student::with(['batch'])->institution($this->institution_id())
                             ->orderBy('id', 'desc')->limit(8)->get();
-        $total_sms = InsSms::where('institution_id', $this->institution_id())->first();   
+        $total_sms = InsSms::where('institution_id', $this->institution_id())->first();
         $user_manual_link = Setting::where('institution_id', 0)->first()->user_manual_file_link;
         $registrationManager = \App\Models\RegistrationManager::where("institution_id", $this->institution_id())->orderBy("id", "desc")->first();
         if ($registrationManager !== null) {
@@ -60,5 +61,18 @@ $remaining_days = $validTo->diffInDays(now());
         //$validTo = \Carbon\Carbon::parse($registrationManager->valid_to);
         //$remaining_days = $validTo->diffInDays(now());
         return view('index', compact('total_student', 'total_institution', 'total_user', 'total_payment',  'latest_payments', 'latest_students', 'total_sms', 'user_manual_link', 'remaining_days'));
+    }
+
+    public function redirectToPay(): RedirectResponse
+    {
+        $institution = auth("web")->user()->institution;
+        $firstRegistrationManager = $institution->registrationManagers()->orderBy("id", "desc")->first();
+        $_SESSION["id"] = $institution->id; // institution id
+        $_SESSION["institution_id"] = $institution->id; // institution id
+        $_SESSION["payment_type_id"] = 104;
+        $_SESSION["Account_Renew_Fee"] = 0; //
+        $_SESSION["Total_Days"] = 0;
+        $url = "https://www.shikkhafirst.com/sims/bkash.php?id=".$institution->id."&payment_type_id=104&Account_Renew_Fee=".$firstRegistrationManager->account_renew_fee."&Total_Days=".$firstRegistrationManager->total_days."";
+        return redirect()->to($url);
     }
 }

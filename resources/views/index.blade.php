@@ -27,7 +27,8 @@
         <div class="col-md-12 col-sm-12">
             <div class="card card-success card-outline">
                 <div class="card-body">
-                    <b class="text-danger">Your registration will be expire with in {{ $remaining_days }} days. Please renew Here</b> <a class="btn btn-xs btn-outline-success" href="{{ route("dashboard", ["paynow" => 1]) }}">@lang("Pay Now")</a>
+                    <b class="text-danger">Your registration will be expire with in {{ $remaining_days }} days. Please renew Here</b>
+                    <a class="btn btn-xs btn-outline-success" href="{{ route("dashboard", ["paynow" => 1]) }}">@lang("Pay Now")</a>
                 </div>
             </div>
         </div>
@@ -44,7 +45,7 @@
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                           <i class="fas fa-minus"></i>
                         </button>
-                        
+
                         <button type="button" class="btn btn-tool" data-card-widget="remove">
                           <i class="fas fa-times"></i>
                         </button>
@@ -98,18 +99,18 @@
                 <span class="info-box-icon bg-info elevation-1"><i class="fas fa-home"></i></span>
                 <div class="info-box-content">
                   <span class="info-box-text"><b>Institutions</b></span>
-                  <span class="info-box-number">                    
+                  <span class="info-box-number">
                     {{$total_institution}}
                     <small></small>
                   </span>
                 </div>
             </div>
-          @else 
+          @else
           <div class="info-box">
               <span class="info-box-icon bg-info elevation-1"><i class="fas fa-sms"></i></span>
               <div class="info-box-content">
                 <span class="info-box-text"><b>SMS</b></span>
-                  <span class="info-box-number">                    
+                  <span class="info-box-number">
                     Total SMS: <span id="total_sms"></span>
                   </span>
                   <small></small>
@@ -119,7 +120,7 @@
           @endif
               <!-- /.info-box -->
         </div>
-      
+
 
         <div class="col-12 col-sm-6 col-md-3">
             <div class="info-box">
@@ -202,7 +203,7 @@
                 </tr>
                 @endforeach
                 @endif
-                
+
                 </tbody>
               </table>
             </div>
@@ -244,8 +245,8 @@
                 <div class="product-img">
                   @if($latest_student->user_profile)
                   <img src="{{asset('/storage/students/'.$latest_student->user_profile)}}" alt="Product Image" class="img-size-50 img-rounded" />
-                  @else 
-                  <img src="{{asset("/dist/img/profile_avatar.png")}}" alt="Product Image" class="img-size-50" />                  
+                  @else
+                  <img src="{{asset("/dist/img/profile_avatar.png")}}" alt="Product Image" class="img-size-50" />
                   @endif
                 </div>
                 <div class="product-info">
@@ -255,7 +256,7 @@
                     <i class="fa fa-calendar"></i> {{date('d-M,y', strtotime($latest_student->admission_date))}}
                     @if($latest_student->student_contact)
                     <i class="fa fa-phone"></i> {{$latest_student->student_contact}} (St.)
-                    @else 
+                    @else
                     <i class="fa fa-phone"></i> {{$latest_student->guardian_contact}} (Gr.)
                     @endif
                   </span>
@@ -264,7 +265,7 @@
               @endforeach
               @endif
               <!-- /.item -->
-              
+
             </ul>
           </div>
           <!-- /.card-body -->
