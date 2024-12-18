@@ -32,6 +32,7 @@ Route::middleware(['auth', 'is_active', 'user_registration_check'])->prefix('das
 
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/redirectToPay', [HomeController::class, 'redirectToPay'])->name('redirectToPay')->withoutMiddleware(['is_active','user_registration_check']);
+    Route::get('/redirectToPayRegister', [HomeController::class, 'redirectToPayRegister'])->name('redirectToPayRegister')->withoutMiddleware(['is_active','user_registration_check']);
 
     // back to superadmin
     Route::get('/back-to-superadmin', function(){

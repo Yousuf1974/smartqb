@@ -125,7 +125,21 @@
                                     !!}
                                 </td>
                                 <td>
-                                    <span class="badge badge-success">Active</span>
+{{--                                    <span class="badge badge-success">Active</span>--}}
+                                    <div class="form-group">
+                                        <input
+                                            class="user_status"
+                                            type="checkbox"
+                                            value="1"
+                                            data-toggle="toggle" data-size="small"
+                                            data-onstyle="success"
+                                            data-offstyle="warning"
+                                            @if($user->active_status) checked @endif
+                                            data-user-id="{{$user->id}}"
+                                        />
+                                    </div>
+
+
                                 </td>
                                 <td>
                                     <div class="btn-group dropleft">
@@ -239,7 +253,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 @endsection
@@ -248,6 +261,16 @@
     {{-- data tables style --}}
     <link rel="stylesheet" href="{{asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css')}}">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet"/>
+    <style>
+        .toggle{
+            width: 60px !important;
+            height: 13px !important;
+        }
+        .toggle .btn{
+            font-size: 13px !important;
+        }
+    </style>
 @endpush
 {{-- extra js --}}
 @push('js')
@@ -256,6 +279,7 @@
     <script src="{{asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js')}}"></script>
     <script src="{{asset('plugins/datatables-responsive/js/dataTables.responsive.min.js')}}"></script>
     <script src="{{asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js')}}"></script>
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 @endpush
 
 @push('js')
@@ -279,6 +303,28 @@
         }
 
         $('#from_date, #to_date').on('change', calculateDifference);
+
+        $(document).on('change', '.user_status', function () {
+            const userId = $(this).data('user-id');
+            const isActive = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: "{{ route('admin.users.updateStatus') }}", // Replace with your route
+                type: 'POST',
+                data: {
+                    user_id: userId,
+                    is_active: isActive,
+                    _token: '{{ csrf_token() }}' // Include CSRF token for security
+                },
+                success: function (response) {
+                    alert('User status updated successfully!');
+                },
+                error: function (xhr) {
+                    alert('Something went wrong!');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
     });
 </script>
 @endpush

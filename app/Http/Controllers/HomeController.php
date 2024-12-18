@@ -73,6 +73,16 @@ $remaining_days = $validTo->diffInDays(now());
         $_SESSION["Account_Renew_Fee"] = 0; //
         $_SESSION["Total_Days"] = 0;
         $url = "https://www.shikkhafirst.com/sims/bkash.php?id=".$institution->id."&payment_type_id=104&Account_Renew_Fee=".$firstRegistrationManager->account_renew_fee."&Total_Days=".$firstRegistrationManager->total_days."";
+        //$url = "https://www.shikkhafirst.com/sims/bkash.php?id=".$institution->id."&payment_type_id=104&Account_Renew_Fee=99&Total_Days=30";
         return redirect()->to($url);
+    }
+    
+    public function redirectToPayRegister(): RedirectResponse
+    {
+        // Institution created successfully
+        $institution = auth("web")->user()->institution;
+        $_SESSION["id"] = $institution->id;
+        $_SESSION["payment_type_id"] = 103;
+        return redirect()->away('https://shikkhafirst.com/sims/bkash.php?id='.$institution->id.'&payment_type_id=103'); // Replace with your payment URL
     }
 }

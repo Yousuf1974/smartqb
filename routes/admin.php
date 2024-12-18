@@ -28,6 +28,7 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
         Route::get('/{id}/edit', [AdminController::class, 'edit'])->name('admin.users.edit');
         Route::put('/{id}', [AdminController::class, 'update'])->name('admin.users.update');
         Route::delete('/{id}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+        Route::post('/update-status', [AdminController::class, 'updateStatus'])->name('admin.users.updateStatus');
     });
 
     // institution module
@@ -40,20 +41,20 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
     Route::prefix('sms')->group(function(){
         Route::get('sms-purchase-history', [SMSController::class, 'sms_purchase_history'])->name('admin.sms_purchase_history');
     });
-    
-    // SMS Module 
+
+    // SMS Module
     Route::resource('sms', SMSController::class);
 
-    // user admin permission 
+    // user admin permission
     Route::get('user-admin-permission', [SettingsController::class, 'user_admin_permission'])->name('user.admin.permission');
     Route::post('{role}/user-admin-permission', [SettingsController::class, 'user_admin_per_store'])->name('user.admin.per.store');
-    
+
     // settings
     Route::prefix('settings')->group(function(){
         Route::get('general', [SettingsController::class, 'index'])->name('settings.general');
         Route::post('general', [SettingsController::class, 'store'])->name('settings.general_store');
     });
 
-    // super admin logout 
+    // super admin logout
     Route::post('/admin-logout', [AdminController::class, 'logout'])->name('admin.logout');
 });

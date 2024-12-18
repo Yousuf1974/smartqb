@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Admin;
 use App\Models\Institution;
@@ -11,24 +12,24 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
 
-    public function index() 
+    public function index()
     {
         $latest_institutions = Institution::with(['students'])->orderBy('id', "desc")->take(10)->get();
         return view('pages.admin.dashboard', compact('latest_institutions'));
     }
 
-    public function users(Request $request) 
+    public function users(Request $request)
     {
         $admins = Admin::get();
         return view('pages.admin.users.index', compact('admins'));
     }
 
-    public function create() 
+    public function create()
     {
         return view('pages.admin.users.create');
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string',
@@ -66,7 +67,7 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('updated', 'Admin user update successfull!');
     }
 
-    public function destroy($id) 
+    public function destroy($id)
     {
         $admin = Admin::findOrFail($id);
         $admin->delete();
@@ -74,16 +75,16 @@ class AdminController extends Controller
     }
 
 
-    public function login() 
+    public function login()
     {
         return view('auth.admin');
     }
 
     public function logout(Request $request)
     {
-        Auth::guard('admin')->logout(); 
-        $request->session()->invalidate();    
-        $request->session()->regenerateToken();    
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('admin.login');
     }
 
@@ -97,5 +98,19 @@ class AdminController extends Controller
             return redirect()->route('admin');
         }
         return redirect()->back()->with('error', 'Crediantial not found!');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $user->active_status = $request->is_active;
+        $user->save();
+
+        return response()->json(['message' => 'User status updated successfully!']);
     }
 }
