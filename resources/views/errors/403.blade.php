@@ -21,7 +21,7 @@
 {{--                    <a href="{{route("dashboard")}}" class="btn btn-dark btn-sm">Go to Dashboard</a>--}}
 {{--                    <a href="{{url()->previous()}}" class="btn btn-outline-dark btn-sm">Back</a>--}}
 
-                    <a href="{{ route("redirectToPay") }}" class="btn btn-sm btn-outline-success" style="font-weight: bold;">@lang("Pay Now")</a>
+                    <a href="{{ route("redirectToPayRegister") }}" class="btn btn-sm btn-outline-success" style="font-weight: bold;">@lang("Pay Now")</a>
                     <form method="POST" action="{{ route('logout') }}" class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-outline-dark btn-sm"  style="font-weight: bold;">
