@@ -31,7 +31,7 @@
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                           <i class="fas fa-minus"></i>
                         </button>
-                        
+
                         <button type="button" class="btn btn-tool" data-card-widget="remove">
                           <i class="fas fa-times"></i>
                         </button>
@@ -54,17 +54,17 @@
                                 <label for="batch">Batch</label>
                                 <select name="batch" id="batch" class="form-control">
                                     <option value="" hidden>Select Batch</option>
-                                   
+
                                 </select>
                             </div>
 
                             <div class="col-md-3 col-sm-12 form-group">
                                 <label for="student">Student</label>
                                 <select name="student" id="student" class="form-control">
-                                    <option value="" hidden>Select Student</option>                                    
+                                    <option value="" hidden>Select Student</option>
                                 </select>
                             </div>
-                           
+
                             <div class="col-md-3 col-sm-12 form-group">
                                 <label for="date">Date</label>
                                 <input type="date" name="date" id="date" class="form-control" />
@@ -109,7 +109,7 @@
                     <?php
                         $total_amount = 0;
                         $total_discount = 0;
-                        $total_due = 0;    
+                        $total_due = 0;
                     ?>
                     <table class="table table-sm text-sm text-center table-bordered">
                         <thead>
@@ -129,9 +129,9 @@
                         <tbody>
                             @foreach($payments as $payment)
                                 <?php
-                                    $total_amount = $payment->amount ?? 0;
-                                    $total_discount = $payment->discount ?? 0;
-                                    $total_due = $payment->due ?? 0;
+                                    $total_amount += $payment->amount ?? 0;
+                                    $total_discount += $payment->discount ?? 0;
+                                    $total_due += $payment->due ?? 0;
                                 ?>
                                 <tr>
                                     <td>{{$loop->iteration}}</td>
@@ -195,7 +195,7 @@
             // print report button
             $('#print_report_btn').on('click', function(){
                 printJS({
-                    printable: "print_report", 
+                    printable: "print_report",
                     type: 'html',
                     'css' : 'https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css'
                 });
@@ -207,12 +207,12 @@
                 placeholder : "Select A Batch"
             });
 
-            // student 
+            // student
             $('#student').select2({
                 theme: 'bootstrap4',
                 placeholder : "Select A Student"
             });
-            
+
             var students = @json($students);
             var batchs = @json($batches);
 
@@ -223,11 +223,11 @@
                     if(id == item.batch_type)
                     {
                         output += `<option value="${item.id}">${item.batch_name}</option>`;
-                    }                    
+                    }
                 });
                 $('#batch').html(output);
             });
-            
+
             $('#batch').on('change', function(){
                 var id = $(this).val();
                 var output = '<option value="" hidden>Select a Student</option>';
@@ -235,7 +235,7 @@
                     if(id == item.batch_id)
                     {
                         output += `<option value="${item.id}">${item.student_name}</option>`;
-                    }                    
+                    }
                 });
                 $('#student').html(output);
             });
