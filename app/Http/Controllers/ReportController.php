@@ -19,7 +19,7 @@ class ReportController extends Controller
     {
         $students = null;
         $filter = false;
-        if($request->filter == 'yes') 
+        if($request->filter == 'yes')
         {
             $filter = true;
             $students = Student::with(['batch'])->institution($this->institution_id());
@@ -30,7 +30,7 @@ class ReportController extends Controller
             if($request->admission_date)
                 $students = $students->whereDate('admission_date', $request->admission_date);
             $students = $students->get();
-      
+
         }
         $batches = Batch::select(['id', 'batch_name'])->institution($this->institution_id())->get();
         return view('pages.reports.student', compact('batches', 'filter', 'students'));
@@ -38,7 +38,7 @@ class ReportController extends Controller
 
     public function student_report_pdf(Request $request)
     {
-        if($request->filter == 'yes') 
+        if($request->filter == 'yes')
         {
             $filter = true;
             $students = Student::with(['batch'])->institution($this->institution_id());
@@ -62,27 +62,47 @@ class ReportController extends Controller
     {
         $filter = false;
         $payments = null;
+
+        $loggedInUser = auth()->user();
+        $loggedInUserRoles = $loggedInUser->getRoleNames()->toArray();
+
         if($request->filter)
         {
             $filter = true;
             $payments = Payment::with(['student', 'student.batch', 'payment_received']);
             // batch type
             if($request->type)
+            {
                 $payments = $payments->whereRelation('student.batch', 'batch_type', $request->type);
+            }
+
             // student batch id
             if($request->batch)
+            {
                 $payments = $payments->whereRelation('student', 'batch_id', $request->batch);
+            }
             // student id
             if($request->student)
+            {
                 $payments = $payments->where('student_id', $request->student);
+            }
             // payment date
             if($request->date)
+            {
                 $payments = $payments->whereDate('payment_date', $request->date);
+            }
             // sorting
             if($request->sort)
+            {
                 $payments = $payments->orderBy('id', $request->sort);
-            $payments = $payments->get();
-            
+            }
+
+            if(in_array("Admin", $loggedInUserRoles)){
+                $payments = $payments->institution($this->institution_id())->get();
+            }
+            else{
+                $payments = $payments->where('created_by', $loggedInUser->id)->get();
+            }
         }
         $students = Student::select(['id', 'student_name', 'batch_id'])->institution($this->institution_id())->get();
         $batches = Batch::select(['id', 'batch_name', 'batch_type'])->institution($this->institution_id())->get();
@@ -91,27 +111,40 @@ class ReportController extends Controller
 
     public function payment_report_pdf(Request $request)
     {
+        $loggedInUser = auth()->user();
+        $loggedInUserRoles = $loggedInUser->getRoleNames()->toArray();
+
         if($request->filter)
         {
             $filter = true;
             $payments = Payment::with(['student', 'student.batch', 'payment_received']);
             // batch type
-            if($request->type)
+            if ($request->type) {
                 $payments = $payments->whereRelation('student.batch', 'batch_type', $request->type);
+            }
             // student batch id
-            if($request->batch)
+            if ($request->batch) {
                 $payments = $payments->whereRelation('student', 'batch_id', $request->batch);
+            }
             // student id
-            if($request->student)
+            if ($request->student) {
                 $payments = $payments->where('student_id', $request->student);
+            }
             // payment date
-            if($request->date)
+            if ($request->date) {
                 $payments = $payments->whereDate('payment_date', $request->date);
+            }
             // sorting
-            if($request->sort)
+            if ($request->sort) {
                 $payments = $payments->orderBy('id', $request->sort);
-            $payments = $payments->get();
-            
+            }
+
+            if (in_array("Admin", $loggedInUserRoles)) {
+                $payments = $payments->institution($this->institution_id())->get();
+            } else {
+                $payments = $payments->where('created_by', $loggedInUser->id)->get();
+            }
+
             $pdf = Pdf::loadView('pages.reports.payment_pdf', compact('payments'));
             return $pdf->download('student_payment_'.date('dmy').'_'.substr(rand(), 5).'.pdf');
         }
@@ -131,7 +164,7 @@ class ReportController extends Controller
                 $val = explode('=', $string);
                 $key = $val[0];
                 $val = $val[1];
-                if(array_key_exists($key, $data)) 
+                if(array_key_exists($key, $data))
                 {
                     if(is_array($data[$key]))
                         array_push($data[$key], $val);
@@ -148,7 +181,7 @@ class ReportController extends Controller
             if($request->has('month')){
                 if(is_array($data['month']))
                     $student_payments = $student_payments->whereIn('pay_month', $data['month']);
-                else 
+                else
                     $student_payments = $student_payments->where('pay_month', $request->month);
                 $monthly=true;
             }
