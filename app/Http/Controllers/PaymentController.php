@@ -76,7 +76,7 @@ class PaymentController extends Controller
                 })
                 ->rawColumns(['action'])
                 ->toJson();
-        
+
     }
 
 
@@ -87,7 +87,7 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        if(request()->ajax()) 
+        if(request()->ajax())
         {
             return $this->dataTable();
         }
@@ -108,7 +108,7 @@ class PaymentController extends Controller
 
         if(!request()->status)  {
             $online_payments = $online_payments->where('is_approved', !true);
-        }        
+        }
         $online_payments = $online_payments->get();
 
         $pending_count = OnlinePayment::whereIn('student_id', function($query){
@@ -122,11 +122,11 @@ class PaymentController extends Controller
         })
         ->where('is_approved', true)
         ->count();
-        
+
         return view('pages.payments.online_payment', compact('online_payments', 'pending_count', 'approved_count'));
     }
 
-    // online payment view 
+    // online payment view
     public function online_payment_view($id)
     {
         $online_payment = OnlinePayment::with(['student', 'student.batch', 'online_payment_details'])
@@ -135,7 +135,7 @@ class PaymentController extends Controller
         return view('pages.payments.online_payment_view', compact('online_payment'));
     }
 
-    // payment approved 
+    // payment approved
     public function approved($id)
     {
         $online_payment = OnlinePayment::with(['online_payment_details', 'student', 'student.batch'])->findOrFail($id);
@@ -147,7 +147,7 @@ class PaymentController extends Controller
             $data = [];
             $last_payment = Payment::whereRelation('student', 'institution_id', $this->institution_id())->latest()->first();
             $data['ref_no'] = '001';
-            if($last_payment) 
+            if($last_payment)
             {
                 $ref_no = $last_payment->ref_no + 1;
                 if($ref_no <= 9)
@@ -156,7 +156,7 @@ class PaymentController extends Controller
                     $data['ref_no'] = "0{$ref_no}";
                 else
                     $data['ref_no'] = $ref_no;
-            }            
+            }
             $data['payment_date'] = date('Y-m-d');
             $data['payment_year'] = $online_payment->payment_year;
             $data['student_id'] = $online_payment->student_id;
@@ -187,7 +187,7 @@ class PaymentController extends Controller
                                         ->where('pay_year', $year)
                                         ->where('pay_month', $month)
                                         ->first();
-                    if(is_null($student_payment)) 
+                    if(is_null($student_payment))
                     {
                         StudentPayment::create([
                             'student_id' => $student_id,
@@ -199,8 +199,8 @@ class PaymentController extends Controller
                             'pay_due' => 0,
                             'is_paid' => $batch_fee == $paid_amount,
                         ]);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         $student_payment->pay_amount = ($paid_amount ?? 0) + $student_payment->pay_amount;
                         $student_payment->is_paid = $student_payment->pay_amount + $student_payment->pay_discount == $batch_fee &&  $student_payment->pay_due  == 0;
@@ -220,7 +220,7 @@ class PaymentController extends Controller
     }
 
     // online payment delete
-    public function online_payment_delete(Request $request, $id) 
+    public function online_payment_delete(Request $request, $id)
     {
         $online_payment = OnlinePayment::findOrFail($id);
         $this->authorize('online_payment_delete', [Payment::class, $online_payment]);
@@ -232,12 +232,12 @@ class PaymentController extends Controller
      * Show the form for quick payment
      * @return \Illuminate\Http\Response
      */
-    public function quick_payment(Request $request) 
+    public function quick_payment(Request $request)
     {
         // check authorized action
         $this->authorize('create', Payment::class);
 
-        if($request->ajax() && $request->has('query')) 
+        if($request->ajax() && $request->has('query'))
         {
             $search_query = $request->input('query');
             $year = $request->input('year');
@@ -257,15 +257,15 @@ class PaymentController extends Controller
                     $students = $students->orWhere(function(Builder $query)use($search_query){
                         $query->orWhere('student_contact', $search_query)
                         ->orWhere('guardian_contact', $search_query);
-                    })->where('institution_id', $this->institution_id());           
+                    })->where('institution_id', $this->institution_id());
                 }
 
             $students = $students->get();
-            
+
             return view('pages.payments.search_list', compact('students', 'year'));
         }
 
-        if($request->ajax() && $request->has('student_id')) 
+        if($request->ajax() && $request->has('student_id'))
         {
             $year = $request->input('year');
             $months = $request->input('months');
@@ -330,14 +330,14 @@ class PaymentController extends Controller
         // check authorized action
         $this->authorize('create', Payment::class);
 
-        if($request->batch_type == 1) 
+        if($request->batch_type == 1)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
                 'batch_type' => 'required|numeric',
                 'payment_date' => 'required',
                 'select_month' => 'required|array',
-                'amount' => 'required', 
+                'amount' => 'required',
                 'sub_amount' => 'required|numeric',
                 'sub_discount' => 'nullable|numeric',
                 'sub_due' => 'nullable|numeric',
@@ -345,7 +345,7 @@ class PaymentController extends Controller
             ]);
         }
 
-        if($request->batch_type == 2) 
+        if($request->batch_type == 2)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
@@ -361,10 +361,10 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->all();
-            // get last payment 
+            // get last payment
             $last_payment = Payment::whereRelation('student', 'institution_id', $this->institution_id())->latest()->first();
             $data['ref_no'] = '001';
-            if($last_payment) 
+            if($last_payment)
             {
                 $ref_no = $last_payment->ref_no + 1;
                 if($ref_no <= 9)
@@ -376,7 +376,7 @@ class PaymentController extends Controller
             }
 
             $data['created_by'] = \Auth::id(); // set creator id | uesr id
-            if($request->batch_type == 1) 
+            if($request->batch_type == 1)
             {
                 $data['amount'] = $data['sub_amount'];
                 $data['discount'] = $data['sub_discount'];
@@ -384,10 +384,10 @@ class PaymentController extends Controller
             }
             $data['is_paid'] = ($data['due'] ?? 0) == 0;
             $payment = Payment::create($data); // payment collection create
-            
-            if($request->batch_type == 1) 
+
+            if($request->batch_type == 1)
             {
-                
+
                 // insert payment details
                 foreach($request->select_month as $month) {
                     $paid_amount = ($request->amount[$month] ?? 0) - (($request->discount[$month] ?? 0) + ($request->due[$month] ?? 0));
@@ -406,7 +406,7 @@ class PaymentController extends Controller
                                         ->where('pay_year', $year)
                                         ->where('pay_month', $month)
                                         ->first();
-                    if(is_null($student_payment)) 
+                    if(is_null($student_payment))
                     {
                         StudentPayment::create([
                             'student_id' => $request->student_id,
@@ -418,8 +418,8 @@ class PaymentController extends Controller
                             'pay_due' => $request->due[$month] ?? 0,
                             'is_paid' => $request->batch_fee == $paid_amount + ($request->discount[$month] ?? 0) &&  ($request->due[$month] ?? 0) == 0,
                         ]);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         $student_payment->update([
                             'pay_amount' => ($paid_amount ?? 0) + $student_payment->pay_amount,
@@ -445,7 +445,7 @@ class PaymentController extends Controller
                 $student_payment = StudentPayment::where('student_id', $request->student_id)
                                         ->where('pay_year', $year)
                                         ->first();
-                if(is_null($student_payment)) 
+                if(is_null($student_payment))
                 {
                     StudentPayment::create([
                         'student_id' => $request->student_id,
@@ -455,8 +455,8 @@ class PaymentController extends Controller
                         'pay_discount' => $request->discount ?? 0,
                         'is_paid' => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0),
                     ]);
-                } 
-                else 
+                }
+                else
                 {
                     $student_payment->update([
                         'pay_amount' => ($request->amount ?? 0) + $student_payment->pay_amount,
@@ -465,14 +465,14 @@ class PaymentController extends Controller
                     ]);
                 }
             }
-        
+
             DB::commit();
         }catch(\Exception $e) {
             DB::rollback();
             abort(505, "Something went worng!");
             return;
         }
-        
+
         if($request->send_sms && valid_sms()) {
             $month_list = '';
             if($student->batch->batch_type == 1) {
@@ -482,8 +482,8 @@ class PaymentController extends Controller
                 }
                 $month_list = substr($month_list, 0, -1) . ' (' . $payment->payment_year . ')';
             }
-            
-            
+
+
             $result = $student->notify(new PaymentNotification([
                 'ins_name' => $student->institution->name,
                 'student_name' => $student->student_name,
@@ -499,21 +499,21 @@ class PaymentController extends Controller
                 'month_list' => $month_list,
             ]));
         }
-        
+
         return redirect()->route('payments.create')->with('created', 'Payment create successfully!');
 
     }
 
     /**
-     * Store a newly created resource 
+     * Store a newly created resource
      */
     public function quick_store(Request $request)
     {
-        
+
         // check authorized action
         $this->authorize('create', Payment::class);
-        
-        if($request->batch_type == 1) 
+
+        if($request->batch_type == 1)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
@@ -525,7 +525,7 @@ class PaymentController extends Controller
             ]);
         }
 
-        if($request->batch_type == 2) 
+        if($request->batch_type == 2)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
@@ -539,12 +539,12 @@ class PaymentController extends Controller
         $student = Student::with(['batch', 'institution'])->findOrFail($request->student_id);
 
         DB::beginTransaction();
-        try{            
+        try{
             $data = $request->all();
-            // get last payment 
+            // get last payment
             $last_payment = Payment::whereRelation('student', 'institution_id', $this->institution_id())->latest()->first();
             $data['ref_no'] = '001';
-            if($last_payment) 
+            if($last_payment)
             {
                 $ref_no = $last_payment->ref_no + 1;
                 if($ref_no <= 9)
@@ -554,7 +554,7 @@ class PaymentController extends Controller
                 else
                     $data['ref_no'] = $ref_no;
             }
-        
+
             $data['payment_date'] = today();
             $data['total_amount'] = (double)($request->amount ?? 0);
 
@@ -590,7 +590,7 @@ class PaymentController extends Controller
                                         ->where('pay_year', $year)
                                         ->where('pay_month', $month)
                                         ->first();
-                    if(is_null($student_payment)) 
+                    if(is_null($student_payment))
                     {
                         StudentPayment::create([
                             'student_id' => $request->student_id,
@@ -600,11 +600,11 @@ class PaymentController extends Controller
                             'pay_amount' => $month_fee ?? 0,
                             'is_paid' => true,
                         ]);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         $pay_amount = ($month_fee ?? 0) + $student_payment->pay_amount;
-                        
+
                         $student_payment->update([
                             'pay_amount' => $pay_amount,
                             'pay_due' => $pay_amount == $student_payment->need_to_pay ? 0 : $student_payment->due - $month_fee,
@@ -626,7 +626,7 @@ class PaymentController extends Controller
                     $student_payment = StudentPayment::where('student_id', $request->student_id)
                                         ->where('pay_year', $year)
                                         ->first();
-                    if(is_null($student_payment)) 
+                    if(is_null($student_payment))
                     {
                         StudentPayment::create([
                             'student_id' => $request->student_id,
@@ -636,8 +636,8 @@ class PaymentController extends Controller
                             'is_paid' => $request->batch_fee == $request->amount,
                             'pay_due' => $request->amount == $request->batch_fee ? 0 : $request->batch_fee - $request->amount,
                         ]);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         $pay_amount = $student_payment->pay_amount + $request->amount ?? 0;
                         $student_payment->update([
@@ -666,7 +666,7 @@ class PaymentController extends Controller
                 }
                 $month_list = substr($month_list, 0, -1) . ' (' . $payment->payment_year . ')';
             }
-            
+
             $student->notify(new PaymentNotification([
                 'ins_name' => $student->institution->name,
                 'student_name' => $student->student_name,
@@ -682,7 +682,7 @@ class PaymentController extends Controller
                 'month_list' => $month_list,
             ]));
         }
-        
+
 
         return response()->json([
             'message'   => 'Payment create succssfully!',
@@ -725,14 +725,14 @@ class PaymentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if($request->batch_type == 1) 
+        if($request->batch_type == 1)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
                 'batch_type' => 'required|numeric',
                 'payment_date' => 'required',
                 'select_month' => 'required|array',
-                'amount' => 'required', 
+                'amount' => 'required',
                 'sub_amount' => 'required|numeric',
                 'sub_discount' => 'nullable|numeric',
                 'sub_due' => 'nullable|numeric',
@@ -740,7 +740,7 @@ class PaymentController extends Controller
             ]);
         }
 
-        if($request->batch_type == 2) 
+        if($request->batch_type == 2)
         {
             $request->validate([
                 'student_id' => 'required|numeric',
@@ -758,7 +758,7 @@ class PaymentController extends Controller
         try{
             $data = $request->all();
             $data['updated_by'] = \Auth::id(); // set creator id | uesr id
-            if($request->batch_type == 1) 
+            if($request->batch_type == 1)
             {
                 $data['amount'] = $data['sub_amount'];
                 $data['discount'] = $data['sub_discount'];
@@ -801,7 +801,7 @@ class PaymentController extends Controller
                         'discount' => $request->discount[$month] ?? 0,
                         'due' => $request->due[$month] ?? 0,
                         'month' => $month,
-                    ]);            
+                    ]);
 
                     /**
                      * check student payment is exists, if not exists
@@ -811,14 +811,14 @@ class PaymentController extends Controller
                     $student_payment = StudentPayment::where('student_id', $payment->student_id)
                                         ->where('pay_year', $year)
                                         ->where('pay_month', $month)
-                                        ->first();  
-                    if($student_payment) {     
+                                        ->first();
+                    if($student_payment) {
                         $student_payment->update([
                             'pay_amount' => ($paid_amount ?? 0) + $student_payment->pay_amount,
                             'pay_discount' => ($request->discount[$month] ?? 0) + $student_payment->pay_discount,
                             'pay_due' => ($request->due[$month] ?? 0),
                         ]);
-                        
+
                     }else {
                         // create student payment details
                         $student_payment = StudentPayment::create([
@@ -834,8 +834,8 @@ class PaymentController extends Controller
 
                     // payment paid update
                     $student_payment->is_paid = $student_payment->pay_amount + $student_payment->pay_discount == $request->batch_fee &&  $student_payment->pay_due  == 0;
-                    $student_payment->save(); 
-                     
+                    $student_payment->save();
+
                 }
             }
             elseif($payment->student->batch->batch_type == 2)
@@ -856,9 +856,9 @@ class PaymentController extends Controller
                     'pay_amount' => ($request->amount ?? 0) + $student_payment->pay_amount,
                     'pay_discount' => ($request->discount ?? 0) + $student_payment->pay_discount,
                     'is_paid' => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0),
-                ]); 
+                ]);
                 $student_payment->is_paid = $student_payment->pay_amount == $student_payment->need_to_pay &&  $student_payment->pay_due  == 0;
-                $student_payment->save();   
+                $student_payment->save();
             }
             DB::commit();
             return response()->json(['success' => true, 'text' => 'Payment updated successful!']);
@@ -867,7 +867,7 @@ class PaymentController extends Controller
             abort(505, 'Something went worng!');
             return;
         }
-        
+
     }
 
     /**
@@ -904,7 +904,7 @@ class PaymentController extends Controller
                     $student_payment->save();
                     if(
                         ($student_payment->need_to_pay == $student_payment->pay_due) && !$student_payment->is_paid &&
-                        $student_payment->pay_amount == 0 
+                        $student_payment->pay_amount == 0
                     ){
                         $student_payment->delete();
                     }
@@ -917,6 +917,6 @@ class PaymentController extends Controller
             abort(505, 'Something went wrong!');
         }
         return response()->json(['success' => true, 'message' => 'Payment delete successfull!']);
-        
+
     }
 }

@@ -83,9 +83,9 @@
                     </form>
 
                     @if(!is_null($student))
-                        
+
                         {{-- student info --}}
-                    
+
                         <div class="row">
                             <div class="col-md-4 col-sm-12 p-2 rounded border">
                                 <ul class="list-group list-group-flush ">
@@ -94,7 +94,7 @@
                                     </li>
                                     <li class="list-group-item">Name: <u>{{$student->batch->batch_name}} ({{$student->batch->batch_year}})</u></li>
                                     <li class="list-group-item">
-                                        Type: 
+                                        Type:
                                         @if($student->batch->batch_type == 1)
                                             <u>Montly</u>
                                         @elseif($student->batch->batch_type == 2)
@@ -103,7 +103,7 @@
                                     </li>
                                     <li class="list-group-item">Fee: <u>{{$student->batch->batch_fee}}</u></li>
                                     <li class="list-group-item">
-                                        Batch Start: 
+                                        Batch Start:
                                         @if($student->batch->batch_start)
                                             <u>{{date("M,y", strtotime($student->batch->batch_start . "-01"))}}</u>
                                         @endif
@@ -145,7 +145,7 @@
                                     <div class="alert alert-danger">{{$message}}</div>
                                 @endforeach
                                 <div class="row">
-                                    <div class="col-md-6 col-sm-12">                                    
+                                    <div class="col-md-6 col-sm-12">
                                         <div class="form-group">
                                             <label for="">Date</label>
                                             <input type="date" name="payment_date" value="{{date("Y-m-d")}}" class="form-control form-control-sm"/>
@@ -162,14 +162,14 @@
                                         $arr = explode("-", $student->batch->batch_start);
                                         if($year == $arr[0])
                                             $month_start = ($arr[1] - 1) * 1;
-                                        else 
+                                        else
                                             $month_start = null;
 
                                         $admission_month = null;
                                         if($year == date('Y', strtotime($student->admission_date))) {
                                             $admission_month = (date('m', strtotime($student->admission_date)) -1) * 1;
                                         }
-                                    
+
                                     ?>
                                     <div class="col-md-12 col-sm-12">
                                         <div class="form-group">
@@ -186,7 +186,7 @@
                                                             @else
                                                                 <option value="{{$key}}" data-fee="{{$student->get_due_amount($year, $key)}}">{{$month}} - Due</option>
                                                             @endif
-                                                        @else 
+                                                        @else
                                                             <option data-fee="{{$student->batch->batch_fee}}" value="{{$key}}" >{{$month}}</option>
                                                         @endif
                                                     @endif
@@ -209,7 +209,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="input_container">
-                                                
+
                                             </tbody>
                                             <tfoot>
                                                 <tr>
@@ -222,17 +222,17 @@
                                             </tfoot>
                                         </table>
                                     </div>
-                                    @endif 
+                                    @endif
 
                                     @if($student->batch->batch_type == 2)
                                         <div class="col-md-6 col-sm-12">
                                             <div class="form-group">
                                                 <label for="amount">Amount</label>
-                                                <input 
+                                                <input
                                                     type="number"
-                                                    name="amount" min="0" step="1" 
-                                                    class="form-control form-control-sm" id="amount" 
-                                                    placeholder="Amount" required 
+                                                    name="amount" min="0" step="1"
+                                                    class="form-control form-control-sm" id="amount"
+                                                    placeholder="Amount" required
                                                 />
                                             </div>
                                         </div>
@@ -252,13 +252,13 @@
                                                 <label for="send_sms" class="
                                                 @if(valid_sms() && total_sms() > 0) text-success @else text-danger @endif
                                                 ">
-                                                    Send Payment SMS ({{total_sms()}} Qty) 
+                                                    Send Payment SMS ({{total_sms()}} Qty)
                                                     {{-- <a href="{{route("sms_buy")}}" class="btn btn-xs btn-danger">Buy SMS</a> --}}
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-12 col-sm-12">
                                         <div class="form-group">
                                             <label for="">Payment Note</label>
@@ -289,12 +289,12 @@
                                 </div>
                                 <hr/>
                                 <div class="form-group mt-2 text-center">
-                                    <button class="btn btn-dark">Save</button>
+                                    <button class="btn btn-dark" id="savePayment">Save</button>
                                 </div>
                                 </form>
                             </div>
                         </div>
-                        
+
                     @endif
                 </div>
             </div>
@@ -324,7 +324,7 @@
         $('#send_sms').on('change', function(){
             if($(this).is(':checked')){
                 Swal.fire({
-                    icon: "info", 
+                    icon: "info",
                     title: "Please Buy SMS!",
                     text: "You don\'t have enough sms or validity. Please buy sms!",
                     showCancelButton: true,
@@ -359,13 +359,13 @@
                 placeholder : "Select A Batch"
             });
 
-            // toastr 
+            // toastr
             var toastr_ = null;
-            
+
             $('#batch').on('change', function(){
                 toastr_ = toastr.info('Please wait...');
                 $.get(
-                    "{{route('payments.create')}}", 
+                    "{{route('payments.create')}}",
                     {
                         "batch_id": $(this).val(),
                     },
@@ -443,16 +443,111 @@
                     grand_total();
                 });
 
-                $(document).on('input', '.pay_amount', function(){
-                    var pay_amount = +$(this).val();
-                    var parent_tr = $(this).parent().parent();
-                    var fee = parseInt(parent_tr.find('.amount').val());
-                    parent_tr.find('.discount').val(fee - pay_amount);
+                $(document).on('blur', '.pay_amount', function () {
+                    let parent_tr = $(this).closest('tr');
+                    let givenAmount = parseInt($(this).val()) || 0;
+                    setAmountWithPriority(parent_tr, 'pay_amount', givenAmount);
                 });
+
+                $(document).on('blur', '.discount', function () {
+                    let parent_tr = $(this).closest('tr');
+                    let givenAmount = parseInt($(this).val()) || 0;
+                    setAmountWithPriority(parent_tr, 'discount', givenAmount);
+                });
+
+                $(document).on('blur', '.due', function () {
+                    let parent_tr = $(this).closest('tr');
+                    let givenAmount = parseInt($(this).val()) || 0;
+                    setAmountWithPriority(parent_tr, 'due', givenAmount);
+                });
+
+                function handleInputWithPriority(parent_tr, className) {
+                    let givenAmount = parseInt(parent_tr.find('.' + className).val()) || 0;
+                    let maxAmountForInput = calculateMaxAmount(parent_tr, className);
+
+                    if (givenAmount > maxAmountForInput) {
+                        parent_tr.find('.' + className).val(maxAmountForInput);
+                        givenAmount = maxAmountForInput;
+                    }
+
+                    setAmountWithPriority(parent_tr, className, givenAmount);
+                }
+
+                function calculateMaxAmount(parent_tr, className) {
+                    let fee = parseInt(parent_tr.find('.amount').val()) || 0;
+                    let pay_amount = parseInt(parent_tr.find('.pay_amount').val()) || 0;
+                    let discount = parseInt(parent_tr.find('.discount').val()) || 0;
+                    let due = parseInt(parent_tr.find('.due').val()) || 0;
+
+                    if (className === 'pay_amount') {
+                        return fee - discount - due;
+                    } else if (className === 'discount') {
+                        return fee - pay_amount - due;
+                    } else if (className === 'due') {
+                        return fee - pay_amount - discount;
+                    }
+                }
+
+                function setAmountWithPriority(parent_tr, className, givenAmount) {
+                    let fee = parseInt(parent_tr.find('.amount').val()) || 0;
+                    let pay_amount = parseInt(parent_tr.find('.pay_amount').val()) || 0;
+                    let discount = parseInt(parent_tr.find('.discount').val()) || 0;
+                    let due = parseInt(parent_tr.find('.due').val()) || 0;
+
+                    let maxAllowed = fee;
+
+                    if (className === 'pay_amount') {
+                        if (givenAmount > fee) {
+                            alert('Pay amount cannot exceed the total fee: ' + fee);
+                            parent_tr.find('.pay_amount').val(maxAllowed).focus(); // Reset to previous value
+                            return;
+                        }
+
+                        let remaining = fee - givenAmount;
+
+                        if (discount > 0) {
+                            discount = Math.min(discount, remaining);
+                            remaining -= discount;
+                        }
+
+                        due = Math.max(remaining, 0);
+                        parent_tr.find('.discount').val(discount);
+                        parent_tr.find('.due').val(due);
+                    } else if (className === 'discount') {
+                        maxAllowed = fee - pay_amount - due;
+                        if (givenAmount > maxAllowed) {
+                            alert('Discount cannot exceed the maximum allowed: ' + maxAllowed);
+                            parent_tr.find('.discount').val(maxAllowed).focus(); // Reset to previous value
+                            return;
+                        }
+
+                        let remaining = fee - pay_amount - givenAmount;
+
+                        due = Math.max(remaining, 0);
+                        parent_tr.find('.due').val(due);
+                        parent_tr.find('.discount').val(givenAmount);
+                    } else if (className === 'due') {
+                        maxAllowed = fee - pay_amount - discount;
+                        if (givenAmount > maxAllowed) {
+                            alert('Due amount cannot exceed the maximum allowed: ' + maxAllowed);
+                            parent_tr.find('.due').val(maxAllowed).focus(); // Reset to previous value
+                            return;
+                        }
+
+                        let remaining = fee - pay_amount - givenAmount;
+
+                        discount = Math.max(remaining, 0);
+                        parent_tr.find('.discount').val(discount);
+                        parent_tr.find('.due').val(givenAmount);
+                    }
+
+                    parent_tr.find('.pay_amount').val(pay_amount);
+                }
+
 
                 // sum all amount, discount, due
                 ['.amount', '.pay_amount', '.discount', '.due'].map(function(item) {
-                    $(document).on('input', item, function(){
+                    $(document).on('blur', item, function(){
                         grand_total();
                     });
                 });
@@ -490,17 +585,17 @@
                     $('#footer_due').text(Number(total_due).toFixed(2));
 
                     // input value
-                    $('input[name="total_amount"').val(parseInt(total_amount - (total_discount + total_due)));
-                    $('input[name="sub_discount"').val(parseInt(total_discount));
-                    $('input[name="sub_due"').val(parseInt(total_due));
-                    $('input[name="sub_amount"').val(parseInt(total_amount));
+                    $('input[name="total_amount"]').val(parseInt(total_amount - (total_discount + total_due)));
+                    $('input[name="sub_discount"]').val(parseInt(total_discount));
+                    $('input[name="sub_due"]').val(parseInt(total_due));
+                    $('input[name="sub_amount"]').val(parseInt(total_amount));
                     // grand total
                     $('#footer_grand_total').text(Number(total_amount - (total_discount + total_due)).toFixed(2)); //
 
                 }
 
             })
-            
+
         </script>
     @endpush
 @endif
