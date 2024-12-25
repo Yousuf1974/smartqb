@@ -38,10 +38,17 @@ class InstitutionController extends Controller
                 ->editColumn('renew_to', function(Institution $institution) {
                     return !empty($institution->latestRegistrationManager->valid_to) ? Carbon::parse($institution->latestRegistrationManager->valid_to)->format('d-M-Y') : "N/A";
                 })
-                ->editColumn('remaining_days', function(Institution $institution) {
-                    return !empty($institution->latestRegistrationManager->valid_to) ?
-                        Carbon::parse($institution->latestRegistrationManager->valid_to)->diffInDays(Carbon::today(), false)
-                        : "N/A";
+                ->editColumn('remaining_days', function (Institution $institution) {
+                    $latestRegistration = $institution->registrationManagers()->latest('created_at')->first();
+
+                    if ($latestRegistration) {
+                        $validTo = \Carbon\Carbon::parse($latestRegistration->valid_to);
+                        return $validTo->isFuture()
+                            ? $validTo->diffInDays(\Carbon\Carbon::today())
+                            : 0;
+                    }
+
+                    return "N/A"; // In case there's no valid registration
                 })
                 ->addColumn('total_student', function(Institution $institution) {
                     return $institution->students->count() ?? 0;

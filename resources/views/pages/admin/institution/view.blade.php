@@ -123,9 +123,11 @@
                                 <td>{{$user->email ?? "N/A"}}</td>
                                 <td>
                                     {!!
-                                        $user->getRoleNames()->map(function($role){
-                                            return "<span class='badge badge-info'>".$role."</span>";
-                                        })->implode('&nbsp;');
+                                        $user->getRoleNames()->isNotEmpty()
+                                            ? $user->getRoleNames()->map(function ($role) {
+                                                return "<span class='badge badge-info'>{$role}</span>";
+                                            })->implode('&nbsp;')
+                                            : "N/A"
                                     !!}
                                 </td>
                                 <td>
@@ -249,7 +251,13 @@
                                     {{ $registrationManager['total_days'] ?? 0 }}
                                 </td>
                                 <td>
-                                    {{  \Carbon\Carbon::parse($registrationManager['valid_to'])->diffInDays(\Carbon\Carbon::today(), false) }}
+                                    <?php
+                                        $validTo = \Carbon\Carbon::parse($registrationManager['valid_to']);
+                                        $remainingDays = $validTo->isFuture()
+                                            ? $validTo->diffInDays(\Carbon\Carbon::today())
+                                            : 0;
+                                        ?>
+                                    {{ $remainingDays }}
                                 </td>
                             </tr>
                             @empty
