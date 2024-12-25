@@ -43,10 +43,10 @@
                                 <th>Head Of Ins.</th>
                                 <th>Phone/ID</th>
                                 <th>Password</th>
+                                <th>Registration</th>
                                 <th>Renew From</th>
                                 <th>Renew To</th>
                                 <th>Remaining Days</th>
-                                <th>Registration</th>
                                 <th>Total Student</th>
                                 <th>Active</th>
                                 <th>Action</th>
@@ -108,10 +108,10 @@
                     {data: 'head_of_institution'},
                     {data: 'phone'},
                     {data: 'user_psw'},
+                    {data: 'created_at'},
                     {data: 'renew_from'},
                     {data: 'renew_to'},
                     {data: 'remaining_days'},
-                    {data: 'created_at'},
                     {data: 'total_student'},
                     { data: 'active' },
                     { data: 'action' },
