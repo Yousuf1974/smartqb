@@ -28,14 +28,19 @@ class Institution extends Model
     {
         return $this->hasMany(User::class);
     }
-    
+
     public function admin()
     {
         return User::orderBy('id', 'asc')->where('institution_id', $this->id)->first();
     }
-    
+
     public function registrationManagers()
     {
         return $this->hasMany(RegistrationManager::class);
+    }
+
+    public function latestRegistrationManager()
+    {
+        return $this->hasOne(RegistrationManager::class)->latestOfMany();
     }
 }

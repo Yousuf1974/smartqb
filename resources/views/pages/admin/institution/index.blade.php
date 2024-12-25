@@ -38,12 +38,14 @@
                         <thead class="bg-light">
                             <tr>
                                 <th>SL</th>
-                                <th>Primary Id</th>
+                                <th>Id</th>
                                 <th>Ins. Name</th>
                                 <th>Head Of Ins.</th>
                                 <th>Phone/ID</th>
-                                 <th>Password</th>
-                                <th>Email</th>
+                                <th>Password</th>
+                                <th>Renew From</th>
+                                <th>Renew To</th>
+                                <th>Remaining Days</th>
                                 <th>Registration</th>
                                 <th>Total Student</th>
                                 <th>Active</th>
@@ -101,12 +103,14 @@
                 ajax: '{{route('institution.index')}}',
                 columns: [
                     { data: 'DT_RowIndex' },
-                    {data: 'primary_id'},
+                    {data: 'p_id'},
                     {data: 'name'},
                     {data: 'head_of_institution'},
                     {data: 'phone'},
                     {data: 'user_psw'},
-                    {data: 'email'},
+                    {data: 'renew_from'},
+                    {data: 'renew_to'},
+                    {data: 'remaining_days'},
                     {data: 'created_at'},
                     {data: 'total_student'},
                     { data: 'active' },

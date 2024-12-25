@@ -45,6 +45,10 @@
                         <caption>Institution Details</caption>
                         <tbody>
                             <tr>
+                                <th>Id</th>
+                                <td>{{$institution->id}}</td>
+                            </tr>
+                            <tr>
                                 <th>Name</th>
                                 <td>{{$institution->name}}</td>
                             </tr>
@@ -69,7 +73,7 @@
                             </tr>
                             <tr>
                                 <th>Registration Date</th>
-                                <td>{{date('d/m/y', strtotime($institution->created_at))}}</td>
+                                <td>{{date('d-M-Y', strtotime($institution->created_at))}}</td>
                             </tr>
                             <tr>
                                 <th>Total Stuent</th>
@@ -225,6 +229,7 @@
                                 <th>To Date</th>
                                 <th>Account Renew Fee</th>
                                 <th>Total Days</th>
+                                <th>Remaining Days</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -232,16 +237,19 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    {{ \Carbon\Carbon::parse($registrationManager['valid_from'])->format("d/m/y") }}
+                                    {{ \Carbon\Carbon::parse($registrationManager['valid_from'])->format("d-M-Y") }}
                                 </td>
                                 <td>
-                                    {{ \Carbon\Carbon::parse($registrationManager['valid_to'])->format("d/m/y") }}
+                                    {{ \Carbon\Carbon::parse($registrationManager['valid_to'])->format("d-M-Y") }}
                                 </td>
                                 <td>
                                     {{ $registrationManager['account_renew_fee'] ?? 0 }}
                                 </td>
                                 <td>
                                     {{ $registrationManager['total_days'] ?? 0 }}
+                                </td>
+                                <td>
+                                    {{  \Carbon\Carbon::parse($registrationManager['valid_to'])->diffInDays(\Carbon\Carbon::today(), false) }}
                                 </td>
                             </tr>
                             @empty
