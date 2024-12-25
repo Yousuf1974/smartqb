@@ -84,7 +84,7 @@ class StudentController extends Controller
         })
         ->editColumn('user_profile', function(Student $student){
             if($student->user_profile){
-                $user_profile_path = Storage::url("students/".$student->user_profile);
+                $user_profile_path = asset("storage/students/".$student->user_profile);
                 if(file_exists(public_path("storage/students/".$student->user_profile))){
                     return '<img src="'.$user_profile_path.'" width="60" height="60" class="img-circle elevation-2" alt="User Image">';
                 }else {
@@ -119,7 +119,7 @@ class StudentController extends Controller
             }else {
                 $action = "N/A";
             }
-            
+
             return $action;
         })
         ->rawColumns(['student_name', 'student_contact', 'user_profile', 'action', 'unique_id'])
@@ -196,12 +196,12 @@ class StudentController extends Controller
                 'admission_date' => date('d/m/y', strtotime($student->admission_date)),
                 'unique_id' => $student->unique_id,
                 'pin_number' => $student->pin,
-                'login_link' => route('student.login'), 
-            ])); 
+                'login_link' => route('student.login'),
+            ]));
         }catch(\Exception $e) {
-            
+
         }
-            
+
         return response()->json([
             "text" => 'Student unique id generated successfull!',
             "success" => true,
@@ -229,7 +229,7 @@ class StudentController extends Controller
             'batch' => 'required|numeric',
             'user_profile' => 'nullable|mimes:jpg,JPEG,png,PNG,JPG|max:100'
         ]);
-        
+
         // store image
         $file_name = null;
         if($request->file('user_profile')) {
@@ -247,7 +247,7 @@ class StudentController extends Controller
 
         $data = $request->all();
         $data['user_profile'] = $file_name;
-        if($request->batch) 
+        if($request->batch)
             $data['batch_id'] = $request->batch;
         $data['institution_id'] = $this->institution()->id;
         Student::create($data);
@@ -315,7 +315,7 @@ class StudentController extends Controller
 
         // store image
         $file_name = $student->user_profile;
-        if(($request->file('user_profile') || $request->camera_phone_input) && $student->user_profile) 
+        if(($request->file('user_profile') || $request->camera_phone_input) && $student->user_profile)
         {
             // remove previous image if exists
             // check if exists file in storage
@@ -324,8 +324,8 @@ class StudentController extends Controller
                 unlink(public_path('storage/students/'.$student->user_profile));
             }
         }
-        
-        if($request->file('user_profile')) 
+
+        if($request->file('user_profile'))
         {
             // store new file
             $file_name = rand()."_".date('d_m_y').".".$request->file('user_profile')->getClientOriginalExtension();
@@ -344,12 +344,12 @@ class StudentController extends Controller
 
         $data = $request->all();
         $data['user_profile'] = $file_name;
-        if($request->batch) 
+        if($request->batch)
             $data['batch_id'] = $request->batch;
 
-        if($request->is_active) 
+        if($request->is_active)
             $data['is_active'] = true;
-        else 
+        else
             $data['is_active'] = false;
 
         $student->update($data);
