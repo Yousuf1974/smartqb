@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Institution;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use DataTables;
 use App\Notifications\InstitutionNotification;
@@ -29,10 +30,18 @@ class InstitutionController extends Controller
             return DataTables::eloquent($institutions)
                 ->addIndexColumn()
                 ->editColumn('created_at', function(Institution $institution) {
-                    return date('d/m/y', strtotime($institution->created_at));
+                    return date('d-M-Y', strtotime($institution->created_at));
                 })
-                ->editColumn('email', function(Institution $institution) {
-                    return $institution->email ?? "N/A";
+                ->editColumn('renew_from', function(Institution $institution) {
+                    return !empty($institution->latestRegistrationManager->valid_from) ? Carbon::parse($institution->latestRegistrationManager->valid_from)->format('d-M-Y') : "N/A";
+                })
+                ->editColumn('renew_to', function(Institution $institution) {
+                    return !empty($institution->latestRegistrationManager->valid_to) ? Carbon::parse($institution->latestRegistrationManager->valid_to)->format('d-M-Y') : "N/A";
+                })
+                ->editColumn('remaining_days', function(Institution $institution) {
+                    return !empty($institution->latestRegistrationManager->valid_to) ?
+                        Carbon::parse($institution->latestRegistrationManager->valid_to)->diffInDays(Carbon::today(), false)
+                        : "N/A";
                 })
                 ->addColumn('total_student', function(Institution $institution) {
                     return $institution->students->count() ?? 0;
@@ -44,7 +53,7 @@ class InstitutionController extends Controller
                 ->editColumn('phone', function(Institution $institution) {
                     return $institution->phone . ' <span role="button" class="badge badge-info"><a class="text-light" href="tel:'.$institution->phone.'"><i class="fas fa-phone-alt"></i></a></span>';
                 })
-                ->addColumn('primary_id', function(Institution $institution) {
+                ->addColumn('p_id', function(Institution $institution) {
                     return $institution->id;
                 })
                 ->addColumn('active', function(Institution $institution) {
@@ -210,7 +219,7 @@ class InstitutionController extends Controller
         $institution = Institution::with(['users'])->findOrFail($institution);
         return view('pages.admin.institution.view', compact('institution'));
     }
-    
+
     public function storeRegistration(Request $request, Institution $institution)
     {
         $request->validate([
@@ -219,11 +228,11 @@ class InstitutionController extends Controller
             "account_renew_fee" => "required",
             "total_days" => "required",
         ]);
-        
+
         $fromDate = \Carbon\Carbon::parse($request->from_date);
         $toDate = \Carbon\Carbon::parse($request->to_date);
         $totalDays = $request->total_days;
-        
+
         $registration = RegistrationManager::create([
             "institution_id" => $institution->id,
             "valid_from" => $request->from_date,
