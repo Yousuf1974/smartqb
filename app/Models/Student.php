@@ -95,7 +95,7 @@ class Student extends Authenticatable
         $student_payments =  $this->get_student_payment_by_month_year($year, $month);
         if(!$student_payments)
             return null;
-        return $student_payments ->pay_due ?? 0;
+        return $student_payments->pay_due ?? 0;
     }
 
     /**
@@ -108,7 +108,7 @@ class Student extends Authenticatable
         $student_payments =  $this->get_student_payment_by_month_year($year, $month);
         if(!$student_payments)
             return null;
-        return $student_payments ->pay_amount ?? 0;
+        return $student_payments->pay_amount ?? 0;
     }
 
     public function get_total_paid_amount_by_year($year)
