@@ -348,11 +348,12 @@ class PaymentController extends Controller
         if($request->batch_type == 2)
         {
             $request->validate([
-                'student_id' => 'required|numeric',
-                'batch_type' => 'required|numeric',
+                'student_id'   => 'required|numeric',
+                'batch_type'   => 'required|numeric',
                 'payment_date' => 'required',
-                'amount' => 'required|numeric',
+                'amount'       => 'required|numeric',
                 'total_amount' => 'required|numeric',
+                'due'          => 'required|numeric',
             ]);
         }
 
@@ -433,12 +434,13 @@ class PaymentController extends Controller
             }
             elseif($request->batch_type == 2)
             {
-                $paid_amount = ($request->amount ?? 0) - ($request->discount ?? 0);
+                $paid_amount = ($request->amount ?? 0) - ($request->discount ?? 0) - ($request->due ?? 0);
                 // payment detail collection create
                 PaymentDetail::create([
                     'payment_id' => $payment->id,
-                    'amount' => $paid_amount,
-                    'discount' => $request->discount ?? 0,
+                    'amount'     => $paid_amount,
+                    'discount'   => $request->discount ?? 0,
+                    'due'        => $request->due ?? 0,
                 ]);
                 // student payment collection create
                 $year = date('Y');
@@ -448,20 +450,22 @@ class PaymentController extends Controller
                 if(is_null($student_payment))
                 {
                     StudentPayment::create([
-                        'student_id' => $request->student_id,
-                        'pay_year' => $year,
-                        'need_to_pay' => $request->batch_fee,
-                        'pay_amount' => $paid_amount,
+                        'student_id'   => $request->student_id,
+                        'pay_year'     => $year,
+                        'need_to_pay'  => $request->batch_fee,
+                        'pay_amount'   => $paid_amount,
                         'pay_discount' => $request->discount ?? 0,
-                        'is_paid' => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0),
+                        'pay_due'      => $request->due ?? 0,
+                        'is_paid'      => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0) + ($request->due ?? 0),
                     ]);
                 }
                 else
                 {
                     $student_payment->update([
-                        'pay_amount' => ($request->amount ?? 0) + $student_payment->pay_amount,
+                        'pay_amount'   => ($request->amount ?? 0) + $student_payment->pay_amount,
                         'pay_discount' => ($request->discount ?? 0) + $student_payment->pay_discount,
-                        'is_paid' => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0),
+                        'pay_due'      => ($request->due ?? 0) + $student_payment->pay_due,
+                        'is_paid'      => $request->batch_fee == ($paid_amount ?? 0) + ($request->discount ?? 0) + ($request->due ?? 0),
                     ]);
                 }
             }

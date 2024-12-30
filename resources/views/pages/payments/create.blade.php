@@ -48,7 +48,7 @@
                             <div class="col-md-3 col-sm-12">
                                 <div class="form-group">
                                     <label for="phone">Phone</label>
-                                    <input type="tel" placeholder="Phone" name="phone" id="phone" class="form-control form-control-sm" />
+                                    <input type="tel" placeholder="Phone" name="phone" id="phone" class="form-control form-control-sm" value="{{ request('phone') }}" />
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-12">
@@ -58,7 +58,7 @@
                                         <option value="" hidden>Select Batch</option>
                                         @if($batches->isNotEmpty())
                                             @foreach ($batches as $batch)
-                                                <option value="{{$batch->id}}">{{$batch->batch_name}}</option>
+                                                <option value="{{$batch->id}}" {{ request('batch_id') == $batch->id ? 'selected': '' }}>{{$batch->batch_name}}</option>
                                             @endforeach
                                         @endif
                                     </select>
@@ -96,7 +96,7 @@
                                     <li class="list-group-item">
                                         Type:
                                         @if($student->batch->batch_type == 1)
-                                            <u>Montly</u>
+                                            <u>Monthly</u>
                                         @elseif($student->batch->batch_type == 2)
                                             <u>Contract</u>
                                         @endif
@@ -137,7 +137,11 @@
                                         </tr>
                                         <tr>
                                             <td>Total Paid: {{$student->get_paid_amount($year) ?? "N/A"}}</td>
-                                            <td>Total Due: {{$student->batch->batch_fee - ($student->get_paid_amount($year) ?? 0)}}</td>
+                                            <td>Total Due: {{$student->get_due_amount($year) ?? 0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Discount: {{ ($student->batch->batch_fee - $student->get_paid_amount($year) - $student->get_due_amount($year)) ?? 0 }}</td>
+                                            <td></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -157,6 +161,7 @@
                                             <input type="text" name="ref_no" class="form-control form-control-sm" placeholder="Ref. No"/>
                                         </div>
                                     </div>
+
                                     @if($student->batch->batch_type == 1)
                                     <?php
                                         $arr = explode("-", $student->batch->batch_start);
@@ -225,21 +230,25 @@
                                     @endif
 
                                     @if($student->batch->batch_type == 2)
+                                        <input type="hidden" name="amount" value="{{$student->batch->batch_fee}}" />
+                                        <input type="hidden" id="payment_due" value="{{$student->get_due_amount($year)}}" />
                                         <div class="col-md-6 col-sm-12">
                                             <div class="form-group">
-                                                <label for="amount">Amount</label>
-                                                <input
-                                                    type="number"
-                                                    name="amount" min="0" step="1"
-                                                    class="form-control form-control-sm" id="amount"
-                                                    placeholder="Amount" required
-                                                />
+                                                <label for="pay_amount">Amount</label>
+                                                <input type="number" name="pay_amount" min="0" step="1" class="form-control form-control-sm"
+                                                    id="pay_amount" placeholder="Amount" required />
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-sm-12">
                                             <div class="form-group">
                                                 <label for="discount">Discount</label>
                                                 <input type="number" name="discount" min="0" step="1" class="form-control form-control-sm" id="discount" placeholder="Discount"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-sm-12">
+                                            <div class="form-group">
+                                                <label for="due">Due</label>
+                                                <input type="number" name="due" min="0" step="1" class="form-control form-control-sm" id="due" placeholder="Due"/>
                                             </div>
                                         </div>
                                     @endif
@@ -386,6 +395,19 @@
                     Swal.fire("Something Went Worng!");
                 });
             });
+
+            @if(!empty(request('batch_id')))
+            $('#batch').trigger('change');
+
+            setTimeout(()=>{
+                @if(!empty(request('student_id')))
+                    let studentId = '{{ request('student_id') }}';
+                    $('#student').val(studentId).trigger('change');
+                @endif
+            }, 1000);
+            @endif
+
+
         })
     </script>
 @endpush
@@ -393,24 +415,68 @@
 @if(!is_null($student) && $student->batch->batch_type == 2)
     @push('js')
         <script>
-            $(document).ready(function(){
-                $('#amount').on('input', function(){
-                    calculation();
+            $(document).ready(function () {
+                // Trigger calculation on blur of relevant fields
+                $('#pay_amount, #discount, #due').on('blur', function () {
+                    calculation($(this).attr('id')); // Pass the id of the field being modified
                 });
 
-                $('#discount').on('input', function(){
-                    calculation();
-                });
+                function calculation(modifiedField) {
+                    let batchFee = parseInt($('input[name="batch_fee"]').val()) || 0;
+                    let paymentDue = parseInt($('#payment_due').val()) || 0;
+                    let amount = parseInt($('#pay_amount').val()) || 0;
+                    let discount = parseInt($('#discount').val()) || 0;
+                    let due = parseInt($('#due').val()) || 0;
 
-                function calculation() {
-                    let amount = parseInt($('#amount').val() ? $('#amount').val() : 0);
-                    let discount = parseInt($('#discount').val() ? $('#discount').val() : 0);
-                    $('input[name="total_amount"]').val(parseInt(amount - discount));
-                    $('#footer_subtotal').text(parseInt(amount));
-                    $('#footer_discount').text(parseInt(discount));
-                    $('#footer_grand_total').text(parseInt(amount - discount));
+                    let payableAmount = paymentDue > 0 ? paymentDue : batchFee;
+
+                    if (modifiedField === 'pay_amount') {
+                        if (amount > payableAmount) {
+                            alert('Amount cannot exceed the payable amount!');
+                            amount = payableAmount;
+                            $('#pay_amount').val(amount).focus();
+                        }
+
+                        // Recalculate due and discount
+                        due = payableAmount - amount;
+                        discount = 0;
+                    } else if (modifiedField === 'due') {
+                        if (due > (payableAmount - amount)) {
+                            alert('Due cannot exceed the maximum allowable due!');
+                            due = payableAmount - amount;
+                            $('#due').val(due).focus();
+                        }
+
+                        // Recalculate discount
+                        discount = payableAmount - amount - due;
+                    } else if (modifiedField === 'discount') {
+                        if (discount > (payableAmount - amount)) {
+                            alert('Discount cannot exceed the maximum allowable discount!');
+                            discount = payableAmount - amount;
+                            $('#discount').val(discount).focus();
+                        }
+
+                        // Recalculate due
+                        due = payableAmount - amount - discount;
+                    }
+
+                    // Update input values
+                    $('#pay_amount').val(amount);
+                    $('#discount').val(discount);
+                    $('#due').val(due);
+
+                    // Update total amount
+                    $('input[name="total_amount"]').val(amount);
+
+                    // Update footer values
+                    $('#footer_subtotal').text(payableAmount);
+                    $('#footer_discount').text(discount);
+                    $('#footer_due').text(due);
+                    $('#footer_grand_total').text(amount);
                 }
             });
+
+
         </script>
     @endpush
 @endif
