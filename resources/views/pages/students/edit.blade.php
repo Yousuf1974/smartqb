@@ -46,7 +46,7 @@
                                     @error('student_name')<p class="m-0 text-danger"><small>{{$message}}</small></p>@enderror
                                 </div>
                             </div>
-                           
+
                             <div class="col-md-6 col-sm-12">
                                 <div class="form-group">
                                     <label for="phone">Student Contact*</label>
@@ -78,7 +78,7 @@
                                         <option value="" hidden>Select Batch</option>
                                         @foreach ($batches as $batch)
                                             <option
-                                                @if($student->batch_id == $batch->id) selected @endif 
+                                                @if($student->batch_id == $batch->id) selected @endif
                                                 value="{{$batch->id}}"
                                                 data-class="{{$batch->batch_class}}"
                                             >
@@ -96,7 +96,7 @@
                                     <input type="text" readonly name="student_class" value="{{$student->student_class}}" class="form-control form-control-sm @error('student_class') is-invalid @enderror" placeholder="Student Class" id="class" />
                                     @error('student_class')<p class="m-0 text-danger"><small>{{$message}}</small></p>@enderror
                                 </div>
-                            </div>  
+                            </div>
 
                             <div class="col-md-6 col-sm-12">
                                 <div class="form-group">
@@ -112,9 +112,9 @@
                                     <input type="date" name="admission_date" value="{{$student->admission_date ? date('Y-m-d', strtotime($student->admission_date)) : date('Y-m-d')}}" class="form-control form-control-sm @error('admission_date') is-invalid @enderror" id="admission_date" required />
                                     @error('admission_date')<p class="m-0 text-danger"><small>{{$message}}</small></p>@enderror
                                 </div>
-                            </div>             
+                            </div>
 
-                           
+
                             {{-- hidden user image file --}}
                             <input type="file" style="display: none;" name="user_profile" id="user_profile">
                             {{-- camera photo data --}}
@@ -124,8 +124,13 @@
                                 <label for="">User Profile</label>
                                 <div class="form-group border rounded m-auto text-center p-1">
                                     <div class="mb-1" style="width:260px;height:260px;border:1px solid black;display:block;padding:4px;margin:auto;overflow:hidden;">
+                                        @php
+                                        $canRemove = false;
+                                        @endphp
+
                                         @if($student->user_profile)
                                             @if(file_exists(public_path("storage/students/".$student->user_profile)))
+                                                @php $canRemove = true; @endphp
                                                 <img id="user_profile_preview" style="width:250px;height:250px;" src="{{asset("storage/students/".$student->user_profile)}}" alt="User Profile">
                                             @else
                                             <img id="user_profile_preview" style="width:250px;height:250px;" src="{{asset('dist/img/profile_avatar.png')}}" alt="User Profile">
@@ -142,9 +147,14 @@
                                         <button type="button" class="btn btn-outline-dark" id="camera_button">
                                             <i class="fas fa-camera"></i>
                                         </button>
+                                        @if($canRemove)
+                                        <button type="button" class="btn btn-outline-danger" id="remove_btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        @endif
                                     </div>
 
-                                    <div id="btn_group_two">
+                                    <div id="btn_group_two" style="display: none;">
                                         <button type="button" class="btn btn-outline-dark btn-sm" id="change_camera">
                                             <i class="material-icons">switch_camera</i>
                                         </button>
@@ -173,25 +183,25 @@
 
                                 <div class="form-group mt-1">
                                     <label for="active_status">Active Status</label> <br/>
-                                    <input 
-                                        type="checkbox" 
-                                        name="is_active" 
+                                    <input
+                                        type="checkbox"
+                                        name="is_active"
                                         value="1"
                                         data-on="Active"
                                         data-off="Deactive"
                                         id="active_status"
                                         data-toggle="toggle" data-size="small"
                                         data-width="120"
-                                        data-onstyle="success"   
-                                        data-offstyle="warning" 
-                                        @if($student->is_active) checked @endif  
+                                        data-onstyle="success"
+                                        data-offstyle="warning"
+                                        @if($student->is_active) checked @endif
                                     />
                                 </div>
 
                             </div>
 
                         </div>
-                        
+
                         <div class="form-group mt-3">
                             <button type="submit" class="btn btn-dark">Save</button>
                         </div>
@@ -247,6 +257,28 @@
         $('#close_camera').on('click', function(){
             $('#btn_group_one').show();
             $('#btn_group_two').hide();
+        });
+
+        $('#remove_btn').on('click', function(){
+            if(confirm('Are you sure to remove this image?')){
+                $.ajax({
+                    url: "{{route('students.remove_image', ['student' => $student])}}",
+                    type: 'POST',
+                    data: {
+                        _token: "{{csrf_token()}}",
+                        _method: 'DELETE'
+                    },
+                    success: function(response){
+                        if(response.success){
+                            location.reload();
+                        }
+                        else{
+                            alert(response.text);
+                            return false;
+                        }
+                    }
+                });
+            }
         });
     });
 </script>

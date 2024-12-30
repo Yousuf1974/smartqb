@@ -85,7 +85,8 @@ class StudentController extends Controller
         ->editColumn('user_profile', function(Student $student){
             if($student->user_profile){
                 $user_profile_path = asset("storage/students/".$student->user_profile);
-                if(file_exists(public_path("storage/students/".$student->user_profile))){
+
+                if(file_exists(storage_path("app/public/students/".$student->user_profile))){
                     return '<img src="'.$user_profile_path.'" width="60" height="60" class="img-circle elevation-2" alt="User Image">';
                 }else {
                     return '<img src="'.asset("/dist/img/profile_avatar.png").'" width="60" height="60" class="img-circle elevation-2" alt="User Image">';
@@ -329,7 +330,7 @@ class StudentController extends Controller
         {
             // store new file
             $file_name = rand()."_".date('d_m_y').".".$request->file('user_profile')->getClientOriginalExtension();
-            if(!$request->file('user_profile')->storeAs('public/students/', $file_name)) {
+            if(!$request->file('user_profile')->storeAs('students/', $file_name, 'public')) {
                 // if fail to store image in local storage then set name empty
                 $file_name = null;
             }
@@ -385,6 +386,29 @@ class StudentController extends Controller
         }catch(\Exception $e) {
             DB::rollback();
             return $e->getMessage();
+        }
+    }
+
+    public function removeImage(Student $student)
+    {
+        try{
+            $this->authorize('update', $student);
+
+            if (file_exists(public_path('storage/students/' . $student->user_profile))) {
+                unlink(public_path('storage/students/' . $student->user_profile));
+            }
+            $data['user_profile'] = null;
+            $student->update($data);
+            return response()->json([
+                "text" => 'Student profile image remove successfully!',
+                "success" => true,
+            ]);
+        }
+        catch (\Exception $e) {
+            return response()->json([
+                "text" => 'Something went wrong!',
+                "success" => false,
+            ]);
         }
     }
 }
