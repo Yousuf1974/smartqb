@@ -37,15 +37,14 @@ class PaymentController extends Controller
         $search = request()->search['value'];
         // this data for admin
         $payments = Payment::with(['student', 'student.batch'])
-        ->whereRelation('student', 'institution_id', $this->institution_id());
-        if(!empty($search)) {
-            $payments = $payments->whereHas('student', function(Builder $query)use($search){
-                return $query->where('student_name', 'LIKE', '%'.$search.'%');
+            ->whereRelation('student', 'institution_id', $this->institution_id());
+        if (!empty($search)) {
+            $payments = $payments->whereHas('student', function (Builder $query) use ($search) {
+                return $query->where('student_name', 'LIKE', '%' . $search . '%');
             });
         }
-        $payments = $payments->skip(request()->start)->take(request()->length)
-        ->orderBy('id', 'desc')
-        ->get();
+        $payments = $payments->orderBy('id', 'desc')->get();
+        
         $user = $this->user();
         return DataTables::of($payments)
                 ->addIndexColumn()
