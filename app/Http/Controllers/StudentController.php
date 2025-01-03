@@ -36,15 +36,11 @@ class StudentController extends Controller
             $students = Student::where('institution_id', $this->institution()->id)
                         ->with(['batch', 'institution'])
                         ->whereRelation('batch', 'is_active', true)
-                        ->offset($request->start)
-                        ->limit($request->length)
                         ->orderBy('id', 'desc')
                         ->get();
         } elseif($this->super_admin()) {
             // this data for super admin
             $students = Student::with(['batch', 'institution'])
-                        ->offset($request->start)
-                        ->limit($request->length)
                         ->orderBy('id', 'desc')
                         ->get();
         }
