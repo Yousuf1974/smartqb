@@ -19,6 +19,19 @@
     <!-- /.content-header -->
 @endsection
 
+@push('css')
+    <style>
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .blink {
+            animation: blink 2s step-start infinite;
+        }
+    </style>
+@endpush
+
 {{-- main content --}}
 @section('content')
 
@@ -27,8 +40,8 @@
         <div class="col-md-12 col-sm-12">
             <div class="card card-success card-outline">
                 <div class="card-body">
-                    <b class="text-danger">Your registration will be expire with in {{ $remaining_days }} days. Please renew Here</b>
-                    <a class="btn btn-xs btn-outline-success" href="{{ route("dashboard", ["paynow" => 1]) }}">@lang("Pay Now")</a>
+                    <b class="blink" style="font-size: 24px; color: tomato;">Your registration will be expire with in {{ $remaining_days }} days. Please renew Here</b>
+                    <a class="btn btn-xs btn-outline-success" style="vertical-align: bottom; margin-left: 15px;" href="{{ route("dashboard", ["paynow" => 1]) }}">@lang("Pay Now")</a>
                 </div>
             </div>
         </div>
