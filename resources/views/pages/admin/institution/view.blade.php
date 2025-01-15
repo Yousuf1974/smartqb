@@ -61,7 +61,7 @@
                                 <td>{{$institution->phone}}</td>
                             <tr>
                                 <th>Psw</th>
-                                <td>{{$institution->admin()->raw_psw}}</td>
+                                <td>{{$institution->admin()->raw_psw ?? "N/A"}}</td>
                             </tr>
                             <tr>
                                 <th>E-mail</th>
