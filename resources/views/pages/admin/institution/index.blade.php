@@ -33,6 +33,9 @@
         <div class="col-md-12 col-sm-12 m-auto">
             <div class="card">
                 <div class="card-body overflow-auto">
+                    <a href="{{ route('institutions.export') }}" class="btn btn-sm btn-info mb-3">
+                        Export
+                    </a>
 
                     <table id="institution_list" class="table table-striped table-bordered">
                         <thead class="bg-light">
@@ -102,7 +105,7 @@
                 ],
                 ajax: '{{route('institution.index')}}',
                 columns: [
-                    { data: 'DT_RowIndex' },
+                    {data: 'DT_RowIndex'},
                     {data: 'p_id'},
                     {data: 'name'},
                     {data: 'head_of_institution'},
@@ -113,8 +116,8 @@
                     {data: 'renew_to'},
                     {data: 'remaining_days'},
                     {data: 'total_student'},
-                    { data: 'active' },
-                    { data: 'action' },
+                    {data: 'active'},
+                    {data: 'action'},
                 ],
                 "createdRow": function( row, data, dataIndex ) {
                     $(row).addClass( 'text-center' ).attr('id', 'row'+data.id);
@@ -144,6 +147,24 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $('#destroy-'+id).submit();
+                    }
+                })
+            });
+
+            // clear institution user data
+            $(document).on('click', '.delete_user_data_btn', function(){
+                let id = $(this).data('id');
+                Swal.fire({
+                    title: 'Are you sure to clear user data?',
+                    text: "You won't be able to undo this. Will you proceed to delete all related data with this Institution?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#clear-user-data-'+id).submit();
                     }
                 })
             });

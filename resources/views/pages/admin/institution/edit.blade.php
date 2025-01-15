@@ -85,7 +85,8 @@
                                 <div class="col-md-6 col-sm-12">
                                     <div class="form-group">
                                         <label for="phone">Password</label>
-                                        <input type="text" value="{{$institution->admin()->raw_psw}}" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Password">
+                                        <input type="text" value="{{$institution->admin()->raw_psw ?? ''}}" name="password" id="password" class="form-control @error('password') is-invalid @enderror"
+                                               placeholder="Password">
                                         @error('password') <p class="m-0 text-danger"><small>{{$message}}</small></p> @enderror
                                     </div>
                                 </div>

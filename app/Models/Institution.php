@@ -43,4 +43,14 @@ class Institution extends Model
     {
         return $this->hasOne(RegistrationManager::class)->latestOfMany();
     }
+
+    public function batches()
+    {
+        return $this->hasMany(Batch::class);
+    }
+
+    public function smsPurchases()
+    {
+        return $this->hasMany(SMSPurchase::class);
+    }
 }
