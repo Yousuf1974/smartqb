@@ -186,7 +186,7 @@
                   'sms-index', 'sms-create', 'sms-destroy', 'sms-update',
                 ])
                     <li class="nav-item">
-                        <a href="javascript:void()" class="nav-link">
+                        <a href="javascript:void(0)" class="nav-link">
                             <i class="nav-icon fas fa-sms"></i>
                             <p>
                                 SMS
@@ -254,7 +254,7 @@
                 {{-- report module --}}
                 @canany(['report-student', 'report-payment'])
                     <li class="nav-item">
-                        <a href="javascript:void()" class="nav-link">
+                        <a href="javascript:void(0)" class="nav-link">
                             <i class="nav-icon fas fa-file"></i>
                             <p>
                                 Reports
@@ -300,7 +300,7 @@
                   'miscellaneous-general_setting', 'miscellaneous-institution_setting'
                 ])
                     <li class="nav-item">
-                        <a href="javascript:void()" class="nav-link">
+                        <a href="javascript:void(0)" class="nav-link">
                             <i class="nav-icon fas fa-cogs"></i>
                             <p>
                                 Settings

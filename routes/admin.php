@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstitutionController;
@@ -36,6 +37,8 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
     Route::post('institution/send-sms', [InstitutionController::class,  'send_sms_submit'])->name('institution.send_sms_submit');
     Route::post('institution/{institution}/comment', [InstitutionController::class,  'comment'])->name('institution.comment');
     Route::post('institution/{institution}/registration-manager', [InstitutionController::class,  'storeRegistration'])->name('institution.registration.manager');
+    Route::post('institution/{institution}', [InstitutionController::class,  'clearUserData'])->name('institution.clearUserData');
+    Route::get('institution/export', [InstitutionController::class, 'exportExcel'])->name('institutions.export');
     Route::resource('institution', InstitutionController::class);
 
     Route::prefix('sms')->group(function(){
@@ -53,6 +56,12 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
     Route::prefix('settings')->group(function(){
         Route::get('general', [SettingsController::class, 'index'])->name('settings.general');
         Route::post('general', [SettingsController::class, 'store'])->name('settings.general_store');
+    });
+
+    Route::prefix('report')->middleware('auth')->group(function(){
+        Route::get('/generate',[ReportController::class, 'index'])->name('admin.reports.index');
+        Route::post('/generate',[ReportController::class, 'generate'])->name('admin.report.generate');
+        Route::get('/download/{reportId}', [ReportController::class, 'downloadReport'])->name('admin.report.download');
     });
 
     // super admin logout
