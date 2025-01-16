@@ -58,10 +58,11 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
         Route::post('general', [SettingsController::class, 'store'])->name('settings.general_store');
     });
 
-    Route::prefix('report')->middleware('auth')->group(function(){
+    Route::prefix('report')->middleware('admin_auth')->group(function(){
         Route::get('/generate',[ReportController::class, 'index'])->name('admin.reports.index');
         Route::post('/generate',[ReportController::class, 'generate'])->name('admin.report.generate');
         Route::get('/download/{reportId}', [ReportController::class, 'downloadReport'])->name('admin.report.download');
+        Route::get('/fetchDependencies/{reportId}',[ReportController::class, 'fetchDependencies'])->name('admin.report.fetchDependencies');
     });
 
     // super admin logout

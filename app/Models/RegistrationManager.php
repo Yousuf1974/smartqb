@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class RegistrationManager extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
-      "institution_id", "valid_from", "valid_to", "account_renew_fee", "total_days",
+      "institution_id", "valid_from", "valid_to", "account_renew_fee", "total_days", "transaction_id"
     ];
-    
+
     public function institution()
     {
         return $this->belongsTo(Institution::class);

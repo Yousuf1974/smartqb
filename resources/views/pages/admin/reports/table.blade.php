@@ -25,7 +25,7 @@
                             <tr class="text-nowrap">
                                 <th>#</th>
                                 @foreach($tblColumns as $column)
-                                    <th>{{ ucfirst($column) }}</th>
+                                    <th>{{ str_replace('_', ' ',ucfirst($column)) }}</th>
                                 @endforeach
                             </tr>
                             </thead>
@@ -36,13 +36,13 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         @foreach($tblColumns as $column)
-                                            <td>{{ $item->$column }}</td>
+                                            <td>{{ $item->{$column} }}</td>
                                         @endforeach
                                     </tr>
                                 @endforeach
                             @else
                                 <tr class="text-center">
-                                    <td colspan="{{ count($tblColumns)+1 }}">No available Ahmadi.</td>
+                                    <td colspan="{{ count($tblColumns)+1 }}">No available Data!.</td>
                                 </tr>
                             @endif
                             </tbody>

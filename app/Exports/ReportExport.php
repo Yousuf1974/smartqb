@@ -12,7 +12,11 @@ class ReportExport implements FromArray, WithHeadings
 
     public function __construct(array $data, array $headings)
     {
-        $this->data = $data;
+        $this->data = array_map(function ($row) {
+            return array_map(function ($value) {
+                return $value === 0 ? '0' : $value;
+            }, $row);
+        }, $data);
         $this->headings = $headings;
     }
 
