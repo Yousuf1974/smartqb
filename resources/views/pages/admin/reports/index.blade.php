@@ -37,20 +37,19 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="reportSelect">Select Report</label>
+                                <label for="reportSelect">Select Report <span class="text-danger">*<span></label>
                                 <select id="reportSelect" class="form-control">
                                     <option value="">-- Select one --</option>
                                     @foreach($reportList as $key=>$report)
-                                        <option value="{{ $key }}">{{ $report['title'] }}</option>
+                                        <option value="{{ $key }}" data-require-dependency="{{ !empty($report['requiredInputFields']) }}">{{ $report['title'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <button type="button" id="report_view" class="btn btn-primary" style="margin-top: 35px;">View</button>
-                        </div>
                     </div>
+                    <div class="row" id="reportDependencyContainer" style="display: none;"></div>
+
+                    <button type="button" id="report_view" class="btn btn-primary mb-3">View</button>
 
                     <div class="row">
                         <div class="col-md-12" id="reportDisplayArea" style="display: none;"></div>
@@ -88,6 +87,37 @@
 @push('js')
     <script>
         $(document).ready(function(){
+            $('#reportSelect').change(function () {
+                let requireDependency = $(this).find('option:selected').data('require-dependency');
+                let report_id = $(this).val();
+
+                $('#reportDisplayArea').html('').hide();
+                $('#reportDependencyContainer').html('').hide();
+
+                if(requireDependency){
+                    $('#reportDependencyContainer').html('<p style="padding-left: 10px; color: #008DDA">Fetching dependencies for this report</p>').show();
+
+                    $.ajax({
+                        url: "{{ route('admin.report.fetchDependencies', ['reportId' => 'PLACEHOLDER']) }}".replace('PLACEHOLDER', report_id),
+                        method: 'get',
+                        dataType: 'json',
+                        success: function (response) {
+                            // console.log(response);
+                            $('#reportDependencyContainer').html('');
+                            Object.values(response.html).forEach(function (htmlBlock) {
+                                $('#reportDependencyContainer').append(htmlBlock); // Append each HTML block
+                            });
+                        },
+                        error: function (response) {
+                            $('#reportDependencyContainer').html('Something went wrong!');
+                        },
+                        complete: function(){
+                            $('#reportDependencyContainer').show();
+                        }
+                    });
+                }
+            });
+
             $('#report_view').click(function () {
                 let report_id = $('#reportSelect').val();
 
@@ -101,13 +131,18 @@
 
                 $('#reportDisplayArea').show().html('Report generation in progress...').css('color', '#008DDA').css('padding-left', '10px');
 
+                let reqData = {
+                    _token: "{{ csrf_token() }}",
+                    report_id: report_id,
+                };
+
+                let dependencyInputs = getReportDependencyInputs();
+                reqData = {...reqData, ...dependencyInputs};
+
                 $.ajax({
                     url: "{{ route('admin.report.generate') }}",
                     method: 'post',
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        report_id: report_id,
-                    },
+                    data: reqData,
                     dataType: 'json',
                     success: function (response) {
                         //console.log(response);
@@ -127,6 +162,21 @@
                 });
 
             });
+
+            function getReportDependencyInputs() {
+                let inputData = {};
+
+                $('#reportDependencyContainer input').each(function () {
+                    let inputName = $(this).attr('id') || $(this).attr('name'); // Use `id` or `name` if available
+                    let inputValue = $(this).val();
+
+                    if (inputName) {
+                        inputData[inputName] = inputValue;
+                    }
+                });
+
+                return inputData;
+            }
         });
     </script>
 @endpush
