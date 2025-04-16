@@ -31,7 +31,7 @@
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                           <i class="fas fa-minus"></i>
                         </button>
-                        
+
                         <button type="button" class="btn btn-tool" data-card-widget="remove">
                           <i class="fas fa-times"></i>
                         </button>
@@ -56,7 +56,7 @@
                             <div class="form-group col-md-4 col-sm-12">
                                 <label for="student">Select Student</label>
                                 <select name="student" id="student" class="form-control">
-                                    <option value="" hidden>Select a Student</option>                                    
+                                    <option value="" hidden>Select a Student</option>
                                 </select>
                             </div>
 
@@ -64,12 +64,12 @@
                                 <label for="month">Select Month</label>
                                 <select name="month" id="month" class="form-control" multiple="multiple">
                                     <option value="" hidden>Select a Month</option>
-                                    @foreach(MONTH_LIST as $key =>  $month)                                  
+                                    @foreach(MONTH_LIST as $key =>  $month)
                                         <option value="{{$key}}" >{{$month}}</option>
                                     @endforeach
                                 </select>
                             </div>
-    
+
                         </div>
                         <div class="form-group">
                             <button class="btn btn-dark" type="submit">Search</button>
@@ -117,15 +117,15 @@
                             <tbody class="text-center">
                                 @foreach($student_payments as $student_payment)
                                     <?php
-                                        $total_amount = $student_payment->pay_amount ?? 0;
-                                        $total_discount = $student_payment->pay_due ?? 0;
-                                        $total_due = $student_payment->pay_discount ?? 0;
+                                        $total_amount += $student_payment->pay_amount ?? 0;
+                                        $total_discount += $student_payment->pay_due ?? 0;
+                                        $total_due += $student_payment->pay_discount ?? 0;
                                     ?>
                                     <tr>
                                         <td>{{$loop->iteration}}</td>
                                         <td>{{$student_payment->student->student_name}}</td>
-                                        <td>{{$student_payment->student->batch->batch_name}}</td>                                        
-                                        <td>{{$student_payment->student->student_class ?? "N/A"}}</td>                                        
+                                        <td>{{$student_payment->student->batch->batch_name}}</td>
+                                        <td>{{$student_payment->student->student_class ?? "N/A"}}</td>
                                         @if($monthly)
                                         <td>{{MONTH_LIST[$student_payment->pay_month]}}</td>
                                         @endif
@@ -185,9 +185,11 @@
         });
 
         $(document).ready(function(){
+            setPrevFilteredValue();
+
             $('#print_report_btn').on('click', function(){
                 printJS({
-                    printable: "print_report", 
+                    printable: "print_report",
                     type: 'html',
                     'css' : 'https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css'
                 });
@@ -199,14 +201,14 @@
                 placeholder : "Select A Batch"
             });
 
-            // student 
+            // student
             $('#student').select2({
                 theme: 'bootstrap4',
                 placeholder : "Select A Student"
             });
-            
+
             var students = @json($students);
-            
+
             $('#batch').on('change', function(){
                 var id = $(this).val();
                 var output = '<option value="" hidden>Select a Student</option>';
@@ -214,7 +216,7 @@
                     if(id == item.batch_id)
                     {
                         output += `<option value="${item.id}">${item.student_name}</option>`;
-                    }                    
+                    }
                 });
                 $('#student').html(output);
             });
@@ -229,7 +231,27 @@
                     $('#month_list').hide();
                 }
             });
-
         });
+
+        function setPrevFilteredValue(){
+            let batch = "{{request('batch')}}";
+            let student = "{{request('student')}}";
+            let month = "{{request('month')}}";
+
+            if(batch != "")
+            {
+                $('#batch').val(batch).change();
+            }
+
+            if(student != "")
+            {
+                $('#student').val(student).trigger('change');
+            }
+
+            if(month != "")
+            {
+                $('#month').val(month).trigger('change');
+            }
+        }
     </script>
 @endpush
