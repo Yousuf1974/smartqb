@@ -173,7 +173,11 @@ class ReportController extends Controller
                 } else
                     $data[$key] = $val;
             }
-            $student_payments = StudentPayment::with(['student', 'student.batch']);
+            $student_payments = StudentPayment::with(['student', 'student.batch'])
+                ->whereHas('student', function ($q) {
+                    $q->where('institution_id', $this->institution_id());
+                });
+
             if($request->batch)
                 $student_payments = $student_payments->whereRelation('student', 'batch_id', $request->batch);
             if($request->student)

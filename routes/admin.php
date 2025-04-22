@@ -38,7 +38,7 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
     Route::post('institution/{institution}/comment', [InstitutionController::class,  'comment'])->name('institution.comment');
     Route::post('institution/{institution}/registration-manager', [InstitutionController::class,  'storeRegistration'])->name('institution.registration.manager');
     Route::post('institution/{institution}', [InstitutionController::class,  'clearUserData'])->name('institution.clearUserData');
-    Route::get('institution/export', [InstitutionController::class, 'exportExcel'])->name('institutions.export');
+    Route::get('institution/export/{status?}', [InstitutionController::class, 'exportExcel'])->name('institutions.export');
     Route::resource('institution', InstitutionController::class);
 
     Route::prefix('sms')->group(function(){
