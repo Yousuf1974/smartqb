@@ -28,12 +28,45 @@
 
 {{-- main content --}}
 @section('content')
+    <div class="row">
+        <div class="col-md-12 col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Filter for Institutions</h4>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-4 col-sm-12">
+                            <label for="status_filter">Select Status</label>
+                            <select id="status_filter" class="form-control">
+                                <option value="">-- Select One --</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-dark" type="button" id="filter_btn">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-12 col-sm-12 m-auto">
             <div class="card">
                 <div class="card-body overflow-auto">
-                    <a href="{{ route('institutions.export') }}" class="btn btn-sm btn-info mb-3">
+                    <a href="{{ route('institutions.export') }}" id="export_btn" class="btn btn-sm btn-info mb-3">
                         Export
                     </a>
 
@@ -103,7 +136,13 @@
                     { orderable: false, targets: 0, searchable: false, },
                     { orderable: false, targets: 1, searchable: false, },
                 ],
-                ajax: '{{route('institution.index')}}',
+                {{--ajax: '{{route('institution.index')}}',--}}
+                ajax: {
+                    url: '{{ route('institution.index') }}',
+                    data: function(d) {
+                        d.status = $('#status_filter').val(); // passing filter param
+                    }
+                },
                 columns: [
                     {data: 'DT_RowIndex'},
                     {data: 'p_id'},
@@ -126,6 +165,20 @@
         });
 
         $(document).ready(function(){
+            $('#filter_btn').on('click', function () {
+                let status = $('#status_filter').val();
+
+                let exportUrl = '{{ url("admin/institution/export") }}';
+                if (status) {
+                    exportUrl += '/' + status;
+                }
+
+                // Update export button href
+                $('#export_btn').attr('href', exportUrl);
+
+                // Reload DataTable with new filter
+                $('#institution_list').DataTable().ajax.reload();
+            });
 
             $(document).on('click', '.send_sms', function() {
                let id = $(this).data('id');

@@ -2,22 +2,22 @@
 
 return [
     'list' => [
-        1 => [
-            'title'   => 'Active Institutions list',
-            'query'   => 'SELECT * FROM institutions WHERE is_active = 1',
-            'type'    => 'institute',
-            'columns' => [
-                'id', 'name', 'phone', 'head_of_institution', 'email', 'address',
-            ]
-        ],
-        2 => [
-            'title'   => 'In-Active Institutions list',
-            'query'   => 'SELECT * FROM institutions WHERE is_active = 0',
-            'type'    => 'institute',
-            'columns' => [
-                'id', 'name', 'phone', 'head_of_institution', 'email', 'address',
-            ]
-        ],
+//        1 => [
+//            'title'   => 'Active Institutions list',
+//            'query'   => 'SELECT * FROM institutions WHERE is_active = 1',
+//            'type'    => 'institute',
+//            'columns' => [
+//                'id', 'name', 'phone', 'head_of_institution', 'email', 'address',
+//            ]
+//        ],
+//        2 => [
+//            'title'   => 'In-Active Institutions list',
+//            'query'   => 'SELECT * FROM institutions WHERE is_active = 0',
+//            'type'    => 'institute',
+//            'columns' => [
+//                'id', 'name', 'phone', 'head_of_institution', 'email', 'address',
+//            ]
+//        ],
         3 => [
             'title'               => 'Fetch Details using Transaction ID',
             'query'               => 'SELECT rm.`institution_id`,i.`name`, i.`head_of_institution`, i.`phone`, rm.`valid_from`, rm.`valid_to`, rm.`account_renew_fee`, rm.`total_days` FROM registration_managers rm LEFT JOIN institutions i ON rm.`institution_id` = i.`id` WHERE rm.transaction_id = {transaction_id};',

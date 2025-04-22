@@ -30,10 +30,19 @@ class InstitutionController extends Controller
 
     }
 
-    public function datatables()
+    public function datatables($filterData = [])
     {
         try {
             $institutions = Institution::select('*')->with(['students'])->orderBy('id', 'desc');
+
+            if(!empty($filterData)){
+                if (isset($filterData['status']) && $filterData['status'] == 1) {
+                    $institutions = $institutions->where('is_active', 1);
+                } elseif (isset($filterData['status']) && $filterData['status'] == 0) {
+                    $institutions = $institutions->where('is_active', 0);
+                }
+            }
+
             return DataTables::eloquent($institutions)
                 ->addIndexColumn()
                 ->editColumn('created_at', function (Institution $institution) {
@@ -115,9 +124,17 @@ class InstitutionController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            return $this->datatables();
+        $requestedData = $request->all();
+        $filterData = [];
+
+        if (isset($requestedData['status']) && is_numeric($requestedData['status'])) {
+            $filterData['status'] = $requestedData['status'];
         }
+
+        if ($request->ajax()) {
+            return $this->datatables($filterData);
+        }
+
         return view('pages.admin.institution.index');
     }
 
@@ -370,7 +387,7 @@ class InstitutionController extends Controller
         }
     }
 
-    public function exportExcel(Request $request)
+    public function exportExcel(Request $request, $status = null)
     {
         $tbl_columns = [
             'ID',
@@ -386,7 +403,14 @@ class InstitutionController extends Controller
         ];
 
         try {
-            $institutions = Institution::with(['students', 'latestRegistrationManager'])->orderBy('id', 'desc')->get();
+            $institutions = Institution::with(['students', 'latestRegistrationManager']);
+
+            if ($status) {
+                $statusVal = $status == 'active' ? 1 : 0;
+                $institutions = $institutions->where('is_active', $statusVal);
+            }
+
+            $institutions = $institutions->orderBy('id', 'desc')->get();
 
             $data = [];
             foreach ($institutions as $index => $institution) {
