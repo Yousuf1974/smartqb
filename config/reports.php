@@ -62,7 +62,7 @@ return [
             IF(DATEDIFF(rm.`valid_to`, CURDATE()) < 0, 0, DATEDIFF(rm.`valid_to`, CURDATE())) AS remaining_days
             FROM registration_managers rm
             LEFT JOIN institutions i ON rm.`institution_id` = i.`id`
-            WHERE DATEDIFF(rm.`valid_to`, CURDATE()) <= {days_value}
+            WHERE DATEDIFF(rm.`valid_to`, CURDATE()) BETWEEN 0 AND {days_value}
             GROUP BY rm.`institution_id`;",
             'type'                => 'institute',
             "requiredInputFields" => [
