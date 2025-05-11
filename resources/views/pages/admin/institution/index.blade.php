@@ -49,8 +49,8 @@
                             <label for="status_filter">Select Status</label>
                             <select id="status_filter" class="form-control">
                                 <option value="">-- Select One --</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
                             </select>
                         </div>
                     </div>

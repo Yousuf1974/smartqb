@@ -407,4 +407,37 @@ class StudentController extends Controller
             ]);
         }
     }
+
+    public function fetchBatchWise($batchId)
+    {
+        try {
+            if (empty($batchId)) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Please select a batch first',
+                ]);
+            }
+
+            $students = Student::where('batch_id', $batchId)->where('institution_id', $this->institution()->id)->get();
+
+            $availableYear = Batch::where('institution_id', $this->institution_id())
+                ->select('batch_year')
+                ->distinct()
+                ->orderBy('batch_year')
+                ->pluck('batch_year');
+
+            return response()->json([
+                'status' => true,
+                'students' => $students,
+                'availableYear' => $availableYear,
+                'monthList' => MONTH_LIST
+            ]);
+        }
+        catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong!',
+            ]);
+        }
+    }
 }

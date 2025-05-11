@@ -45,6 +45,7 @@
                                     <th>Batch Class</th>
                                     <th>Batch Start</th>
                                     <th>Ins. Name</th>
+                                    <th>Total Student</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -60,7 +61,7 @@
                                     <tr>
                                         <td>{{$key + 1}}</td>
                                         <td>{{$batch->batch_name}}</td>
-                                       
+
                                         <td>
                                             @if($batch->batch_type == 1)
                                                 Monthly
@@ -75,7 +76,7 @@
                                             @if($batch->batch_start)
                                                 {{date("M,y", strtotime($batch->batch_start . "-01"))}}
                                             @else
-                                                N/A 
+                                                N/A
                                             @endif
                                         </td>
                                         <td>
@@ -83,6 +84,9 @@
                                             @if(auth()->user()->level == 'Super Admin')
                                             <span class="badge badge-info">{{$batch->institution->head_of_institution ?? "N/A"}}|{{$batch->institution->phone ?? "N/A"}}</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            {{ $batch->students_count }}
                                         </td>
                                         <td>
                                             @if($batch->is_active)
@@ -117,7 +121,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                               
+
                             </tbody>
                         </table>
                         </div>
@@ -175,7 +179,7 @@
                     }
                 })
             })
-            
+
         });
     </script>
 @endpush
