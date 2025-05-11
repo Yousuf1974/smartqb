@@ -28,9 +28,13 @@ class BatchController extends Controller
     public function index()
     {
         if($this->admin()){
-            $batches = Batch::with('institution')->where('institution_id', $this->institution()->id)->orderBy('id', 'desc')->get();
+            $batches = Batch::with('institution')
+                ->withCount(['students' => function ($query) {
+                    $query->where('institution_id', $this->institution()->id);
+                }])
+                ->where('institution_id', $this->institution()->id)->orderBy('id', 'desc')->get();
         } elseif($this->super_admin()) {
-            $batches = Batch::with('institution')->orderBy('id','desc')->get();
+            $batches = Batch::with('institution')->withCount('students')->orderBy('id','desc')->get();
         }
         return view('pages.batch.index', compact('batches'));
     }

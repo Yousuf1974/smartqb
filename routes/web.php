@@ -70,6 +70,7 @@ Route::middleware(['auth', 'is_active', 'user_registration_check'])->prefix('das
     Route::resource('batch', BatchController::class);
 
     // student module
+    Route::get('students/fetchBatchWise/{batch}', [StudentController::class, 'fetchBatchWise'])->name('fetchBatchWiseStudent');
     Route::delete('students/remove_image/{student}', [StudentController::class, 'removeImage'])->name('students.remove_image');
     Route::resource('students', StudentController::class);
     // student unique id generate

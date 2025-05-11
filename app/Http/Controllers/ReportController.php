@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Models\StudentPayment;
 use App\Traits\InstitutionTrait;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -152,47 +153,129 @@ class ReportController extends Controller
 
     public function student_payment(Request $request)
     {
-        $student_payments = null;
+        $student_payments = collect();
         $filter = false;
         $monthly = false;
-        if($request->filter)
-        {
-            $data = [];
+        $yearly = false;
+
+        if ($request->filter) {
+            $request->validate([
+                'batch' => 'required|exists:batches,id',
+                'student' => 'nullable|exists:students,id',
+                'month' => 'nullable',
+                'year' => 'nullable|integer',
+                'payment_type' => 'required|string|in:paid,due,unpaid',
+            ], [
+                'batch.required' => 'Please select a batch',
+                'batch.exists' => 'Batch not found',
+                'student.exists' => 'Student not found',
+                'payment_type.required' => 'Please select a payment type',
+                'payment_type.in' => 'Invalid payment type',
+            ]);
+
             $filter = true;
-            foreach(explode('&', $_SERVER['QUERY_STRING']) as $string)
-            {
-                $val = explode('=', $string);
-                $key = $val[0];
-                $val = $val[1];
-                if(array_key_exists($key, $data))
-                {
-                    if(is_array($data[$key]))
-                        array_push($data[$key], $val);
-                    else
-                        $data[$key] = [$data[$key], $val];
-                } else
-                    $data[$key] = $val;
-            }
-            $student_payments = StudentPayment::with(['student', 'student.batch'])
-                ->whereHas('student', function ($q) {
-                    $q->where('institution_id', $this->institution_id());
+            $batchId = $request->batch;
+            $studentId = $request->student;
+            $month = $request->month;
+            $year = $request->year;
+            $paymentType = $request->payment_type;
+
+            // Detect batch type
+            $batch = Batch::find($batchId);
+            $isYearlyBatch = $batch && $batch->batch_type == 2;
+
+            if ($paymentType == 'unpaid') {
+                // Step 1: Get all students in the selected batch
+                $allBatchStudents = Student::where('batch_id', $request->batch)
+                    ->where('institution_id', $this->institution_id());
+
+                if ($studentId) {
+                    $allBatchStudents = $allBatchStudents->where('id', $studentId);
+                }
+
+                $allBatchStudents = $allBatchStudents->get();
+
+                // Step 2: Get student IDs who have any payment record for the selected month
+                $query = StudentPayment::whereIn('student_id', $allBatchStudents->pluck('id'))
+                    ->where('is_paid', '>=', 0); // consider both paid and due
+
+                if ($isYearlyBatch && $year) {
+                    $query->where('pay_year', $year);
+                } elseif (!$isYearlyBatch && $request->filled('month')) {
+                    $query->where('pay_month', $month);
+                }
+
+                $paidOrDueStudentIds = $query->pluck('student_id')->unique();
+
+                // Step 3: Get students who didn't pay at all for that month
+                $unpaidStudents = $allBatchStudents->whereNotIn('id', $paidOrDueStudentIds);
+
+                // Step 4: Simulate fake payment records
+                $simulatedPayments = $unpaidStudents->map(function ($student)  use ($month, $year, $isYearlyBatch) {
+                    $fakePayment = new StudentPayment([
+                        'student_id' => $student->id,
+                        'pay_year' => $isYearlyBatch ? $year : null,
+                        'pay_month' => $isYearlyBatch ? null : $month,
+                        'need_to_pay' => 0,
+                        'pay_amount' => 0,
+                        'pay_discount' => 0,
+                        'pay_due' => 0,
+                        'is_paid' => -1,
+                    ]);
+
+                    $fakePayment->setRelation('student', $student);
+
+                    return $fakePayment;
                 });
 
-            if($request->batch)
-                $student_payments = $student_payments->whereRelation('student', 'batch_id', $request->batch);
-            if($request->student)
-                $student_payments = $student_payments->where('student_id', $request->student);
-            if($request->has('month')){
-                if(is_array($data['month']))
-                    $student_payments = $student_payments->whereIn('pay_month', $data['month']);
-                else
-                    $student_payments = $student_payments->where('pay_month', $request->month);
-                $monthly=true;
+                $student_payments = new Collection($simulatedPayments);
+            } else {
+                // For 'paid' and 'due'
+                $query = StudentPayment::with(['student', 'student.batch'])
+                    ->whereHas('student', function ($q) use ($batchId, $studentId) {
+                        $q->where('institution_id', $this->institution_id())
+                            ->where('batch_id', $batchId);
+
+                        if ($studentId) {
+                            $q->where('id', $studentId);
+                        }
+                    });
+
+                if ($isYearlyBatch && $year) {
+                    $query->where('pay_year', $year);
+                    $monthly = false;
+                    $yearly = true;
+                } elseif (!$isYearlyBatch && $request->filled('month')) {
+                    $query->where('pay_month', $month);
+                    $monthly = true;
+                    $yearly = false;
+                }
+
+                if ($paymentType === 'paid') {
+                    $query->where('is_paid', 1);
+                } elseif ($paymentType === 'due') {
+                    $query->where('is_paid', 0);
+                }
+
+                $student_payments = $query->get();
             }
-            $student_payments = $student_payments->get();
         }
-        $students = Student::select(['id', 'student_name', 'batch_id'])->institution($this->institution_id())->get();
-        $batches = Batch::select(['id', 'batch_name', 'batch_type'])->institution($this->institution_id())->get();
-        return view('pages.reports.student_payment', compact('batches', 'students', 'student_payments', 'filter', 'monthly'));
+
+        $batches = Batch::select(['id', 'batch_name', 'batch_type', 'batch_year'])
+            ->institution($this->institution_id())
+            ->orderBy('batch_year')
+            ->get();
+
+        $availableYear = $batches->pluck('batch_year')->unique()->values()->toArray();
+
+        return view('pages.reports.student_payment', compact(
+            'batches',
+            'student_payments',
+            'filter',
+            'monthly',
+            'yearly',
+            'availableYear'
+        ));
     }
+
 }
