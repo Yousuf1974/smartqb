@@ -58,12 +58,26 @@ return [
         ],
         5 => [
             'title'               => 'Registration Manager Details based on Remaining Days',
-            'query'               => "SELECT rm.`institution_id`, i.`name`, i.`head_of_institution`, i.`phone`, rm.`valid_from`, rm.`valid_to`, rm.`account_renew_fee`, rm.`total_days`,
-            IF(DATEDIFF(rm.`valid_to`, CURDATE()) < 0, 0, DATEDIFF(rm.`valid_to`, CURDATE())) AS remaining_days
-            FROM registration_managers rm
-            LEFT JOIN institutions i ON rm.`institution_id` = i.`id`
-            WHERE DATEDIFF(rm.`valid_to`, CURDATE()) BETWEEN 0 AND {days_value}
-            GROUP BY rm.`institution_id`;",
+            'query' => "SELECT
+    rm.`institution_id`,
+    i.`name`,
+    i.`head_of_institution`,
+    i.`phone`,
+    rm.`valid_from`,
+    rm.`valid_to`,
+    rm.`account_renew_fee`,
+    rm.`total_days`,
+    IF(DATEDIFF(rm.`valid_to`, CURDATE()) < 0, 0, DATEDIFF(rm.`valid_to`, CURDATE())) AS remaining_days
+FROM registration_managers rm
+INNER JOIN (
+    SELECT institution_id, MAX(valid_to) AS latest_valid_to
+    FROM registration_managers
+    GROUP BY institution_id
+) latest_rm ON rm.institution_id = latest_rm.institution_id AND rm.valid_to = latest_rm.latest_valid_to
+LEFT JOIN institutions i ON rm.`institution_id` = i.`id`
+WHERE DATEDIFF(rm.`valid_to`, CURDATE()) BETWEEN 0 AND {days_value}
+ORDER BY rm.`institution_id` ASC;
+",
             'type'                => 'institute',
             "requiredInputFields" => [
                 'days_value' => '<div class="col-md-4">
