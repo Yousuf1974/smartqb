@@ -9,17 +9,30 @@
                 <table class="table table-bordered table-sm text-center">
                     <thead>
                     <tr>
-                        <th style="width:3%;">
-                            <div class="icheck-success border-success">
-                                <input type="checkbox" name="check_all" id="check_all"/>
-                                <label for="check_all"></label>
-                            </div>
-                        </th>
+{{--                        <th style="width:3%;">--}}
+{{--                            <div class="icheck-success border-success">--}}
+{{--                                <input type="checkbox" name="check_all" id="check_all"/>--}}
+{{--                                <label for="check_all"></label>--}}
+{{--                            </div>--}}
+{{--                        </th>--}}
                         <th style="width: 3%;">SL</th>
                         <th style="width: 20%;">Name</th>
-                        <th style="width: 10%;">Phone</th>
+                        <th style="width: 14%;">
+                            <span class="icheck-success border-success">
+                                <input type="checkbox" name="check_all_student" id="check_all_student"/>
+                                <label for="check_all_student"></label>
+                            </span>
+                            Student
+                        </th>
+                        <th style="width: 14%;">
+                            <span class="icheck-success border-success">
+                                <input type="checkbox" name="check_all_guardian" id="check_all_guardian"/>
+                                <label for="check_all_guardian"></label>
+                            </span>
+                            Guardian
+                        </th>
                         <th style="width: 10%;">Batch</th>
-                        <th style="width: 54%;">Message</th>
+                        <th style="width: 38%;">Message</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -56,26 +69,43 @@
                                 <input type="hidden" name="custom[]" value="1"/>
                             @endif
                             <tr>
-                                <td>
+                               {{-- <td>
                                     <div class="icheck-success border-success">
                                         <input type="checkbox" name="selected_id[]" value="{{$student->id}}"
                                                id="selected_id{{$student->id}}"/>
                                         <label for="selected_id{{$student->id}}"></label>
                                     </div>
-                                </td>
+                                </td>--}}
                                 <td>{{$loop->iteration}}</td>
                                 <td>{{$student->student_name}}</td>
                                 <td>
                                     @if($student->student_contact)
-                                        {{$student->student_contact ?? "N/A"}}
+                                        <div class="icheck-success border-success">
+                                            <input class="form-check-input student_check" type="checkbox" name="selected_id[{{$student->id}}][student]" value="1" id="student_sms_{{$student->id}}">
+                                            <label class="form-check-label" for="student_sms_{{$student->id}}">
+                                                {{$student->student_contact}}
+                                            </label>
+                                        </div>
                                     @else
-                                        {{$student->guardian_contact ?? "N/A"}}
+                                        N/A
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($student->guardian_contact)
+                                        <div class="icheck-success border-success">
+                                            <input class="form-check-input guardian_check" type="checkbox" name="selected_id[{{$student->id}}][guardian]" value="1" id="guardian_sms_{{$student->id}}">
+                                            <label class="form-check-label" for="guardian_sms_{{$student->id}}">
+                                                {{$student->guardian_contact}}
+                                            </label>
+                                        </div>
+                                    @else
+                                        N/A
                                     @endif
                                 </td>
                                 <td>{{$student->batch->batch_name}}</td>
                                 <td>
                                     {{$message}}
-                                    <input type="hidden" name="message[]" value="{{$message}}"/>
+                                    <input type="hidden" name="message[{{$student->id}}]" value="{{$message}}"/>
                                 </td>
                             </tr>
                         @endforeach
