@@ -314,13 +314,37 @@
            }
         });
 
-        $(document).on('change','#check_all', function(){
+        /*$(document).on('change','#check_all', function(){
             if($(this).is(":checked")) {
                 $(document).find('input[name="selected_id[]"]').each(function(index, element) {
                     $(element).prop('checked', true);
                 });
             }else {
                 $(document).find('input[name="selected_id[]"]').each(function(index, element) {
+                    $(element).prop('checked', false);
+                });
+            }
+        });*/
+
+        $(document).on('change','#check_all_student', function(){
+            if($(this).is(":checked")) {
+                $(document).find('input.student_check').each(function(index, element) {
+                    $(element).prop('checked', true);
+                });
+            }else {
+                $(document).find('input.student_check').each(function(index, element) {
+                    $(element).prop('checked', false);
+                });
+            }
+        });
+
+        $(document).on('change','#check_all_guardian', function(){
+            if($(this).is(":checked")) {
+                $(document).find('input.guardian_check').each(function(index, element) {
+                    $(element).prop('checked', true);
+                });
+            }else {
+                $(document).find('input.guardian_check').each(function(index, element) {
                     $(element).prop('checked', false);
                 });
             }

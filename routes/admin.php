@@ -7,6 +7,7 @@ use App\Http\Controllers\InstitutionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SMSController;
 use Illuminate\Support\Facades\Auth;
+use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 
 Route::get('/admin-login', [AdminController::class, 'login'])->name('admin.login');
 Route::post('/admin-login', [AdminController::class, 'authenticate'])->name('admin.authenticate');
@@ -67,4 +68,6 @@ Route::middleware(['admin_auth'])->prefix('admin')->group(function() {
 
     // super admin logout
     Route::post('/admin-logout', [AdminController::class, 'logout'])->name('admin.logout');
+
+    Route::get('log-viewer', [LogViewerController::class, 'index']);
 });

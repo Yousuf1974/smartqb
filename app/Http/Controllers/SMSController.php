@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\CustomExcelFileImport;
+use App\Jobs\SendBulkSmsJob;
 use App\Libraries\CommonFunction;
 use App\Models\Batch;
 use App\Models\InsSms;
@@ -16,6 +17,7 @@ use App\Notifications\CustomNotification;
 use App\Traits\InstitutionTrait;
 use App\Traits\SmsTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -142,30 +144,63 @@ class SMSController extends Controller
     {
         $request->validate([
             'selected_id' => 'required|array|min:1',
+            'message' => 'required|array',
         ]);
 
-        if(valid_sms() && total_sms() > 0) {
-
-            foreach($request->selected_id as $key => $student_id) {
-                try{
-                    $student = Student::with(['institution', 'batch'])->find($student_id);
-                    if($student->institution_id == auth()->user()->institution_id)
-                    {
-                        $student->notify(new CustomNotification([
-                            'ins_name' => $student->institution->name,
-                            'student_name' => $student->student_name,
-                            'student_batch' => $student->batch->batch_name,
-                            'student_class' => $student->student_class,
-                            'admission_date' => date('d/m/y', strtotime($student->admission_date)),
-                        ], $request->message[$key], ($request->custom[$key] ?? false)));
-                    }
-                }catch(\Exception $e) {
-                    abort(501, 'Something is wrong!');
-                }
-            }
-            return redirect()->route('custom_sms_send')->with('success', 'Message sent successfully!');
+        if (!valid_sms() || total_sms() <= 0) {
+            return redirect()->route('custom_sms_send')->with('error', 'SMS sending failed!');
         }
-        return redirect()->route('custom_sms_send')->with('success', 'Message sent failed!');
+
+        $recipients = [];
+
+        foreach ($request->selected_id as $student_id => $types) {
+            $student = Student::with(['institution', 'batch'])->find($student_id);
+
+            if (!$student || $student->institution_id !== auth()->user()->institution_id) {
+                continue;
+            }
+
+            $baseData = [
+                'ins_name' => $student->institution->name,
+                'student_name' => $student->student_name,
+                'student_batch' => $student->batch->batch_name,
+                'student_class' => $student->student_class,
+                'admission_date' => date('d/m/y', strtotime($student->admission_date)),
+            ];
+
+            $is_custom = $request->custom[$student_id] ?? false;
+            $message = $request->message[$student_id] ?? null;
+
+            if (isset($types['student']) && $student->student_contact) {
+                $recipients[] = [
+                    'student'   => $student,
+                    'type'      => 'student',
+                    'phone'     => $student->student_contact,
+                    'data'      => $baseData,
+                    'message'   => $message,
+                    'is_custom' => $is_custom,
+                ];
+            }
+
+            if (isset($types['guardian']) && $student->guardian_contact) {
+                $recipients[] = [
+                    'student'   => $student,
+                    'type'      => 'guardian',
+                    'phone'     => $student->guardian_contact,
+                    'data'      => $baseData,
+                    'message'   => $message,
+                    'is_custom' => $is_custom,
+                ];
+            }
+        }
+
+        if (count($recipients)) {
+            Log::info('Dispatching SendBulkSmsJob...');
+            SendBulkSmsJob::dispatch($recipients, auth()->user()->id);
+            return redirect()->route('custom_sms_send')->with('success', 'Message queued successfully!');
+        }
+
+        return redirect()->route('custom_sms_send')->with('error', 'No valid recipients found!');
     }
 
     public function sms_buy()

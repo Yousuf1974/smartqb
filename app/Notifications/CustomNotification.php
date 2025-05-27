@@ -6,85 +6,56 @@ use App\Channels\SmsChannel;
 use App\Models\Institution;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CustomNotification extends Notification
+class CustomNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $short_codes = null;
-    
-    public $message = null;
-    
-    public $is_custom = false;
+    public $short_codes;
+    public $message;
+    public $is_custom;
+    public $institution_id;
+    public $created_by;
+    public $phone;
 
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-    public function __construct($short_codes, $message = null, $custom = false)
+    public function __construct(array $short_codes, ?string $message, bool $custom, int $institution_id, string $phone, ?int $created_by)
     {
         $this->short_codes = $short_codes;
         $this->message = $message;
         $this->is_custom = $custom;
+        $this->institution_id = $institution_id;
+        $this->phone = $phone;
+        $this->created_by = $created_by;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
     public function via($notifiable)
     {
         return [SmsChannel::class];
     }
 
-     /**
-     * Get the array represantion of the notification
-     * @param mixed $notifiable
-     * @return string
-     */
     public function toSms($notifiable)
     {
-        if($this->is_custom) {
+        if ($this->is_custom) {
             return $this->message;
         }
-        
-        $sms_template = Institution::select('custom_sms_template')->where('id', auth()->user()->institution_id)->first();
-        $message = $sms_template->custom_sms_template;
-        foreach($this->short_codes as $key => $value) {
-            $message = str_replace("{{{$key}}}", $value, $message);
+
+        $template = Institution::where('id', $this->institution_id)->value('custom_sms_template') ?? '';
+
+        foreach ($this->short_codes as $key => $value) {
+            $template = str_replace("{{{$key}}}", $value, $template);
         }
-        return $message;
+
+        return $template;
     }
 
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
+    public function getPhone(): ?string
     {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+        return $this->phone;
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function getCreatedBy(): ?int
     {
-        return [
-            //
-        ];
+        return $this->created_by;
     }
 }
