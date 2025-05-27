@@ -66,7 +66,7 @@
                                 ?>
                             {{--@if(request()->send_common == 1)--}}
                             @if(!empty($common_message))
-                                <input type="hidden" name="custom[]" value="1"/>
+                                <input type="hidden" name="custom[{{$student->id}}]" value="1"/>
                             @endif
                             <tr>
                                {{-- <td>
